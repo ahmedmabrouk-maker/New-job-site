@@ -1,0 +1,4 @@
+<?php
+/**
+ * Module: support.php
+ */

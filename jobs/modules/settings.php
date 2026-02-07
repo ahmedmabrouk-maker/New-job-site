@@ -1,0 +1,4 @@
+<?php
+/**
+ * Module: settings.php
+ */
