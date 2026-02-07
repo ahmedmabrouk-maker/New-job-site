@@ -16,6 +16,9 @@
     padding: 20px;
     background-color: transparent; /* Requirement: transparent backgrounds */
     transition: transform 0.2s;
+    position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
 .job-card:hover {
@@ -26,6 +29,7 @@
 .job-title {
     margin-top: 0;
     font-size: 1.25rem;
+    font-weight: 700;
 }
 
 .job-title a {
@@ -64,13 +68,18 @@
     color: #00695c;
 }
 
+.job-excerpt {
+    margin-bottom: 15px;
+    flex-grow: 1;
+}
+
 .job-actions {
     display: flex;
     gap: 10px;
     margin-top: 10px;
 }
 
-.job-view-btn, .jobs-btn-apply, .jobs-btn-favorite {
+.job-view-btn, .jobs-btn-apply-toggle, .jobs-btn-favorite {
     display: inline-block;
     padding: 6px 12px;
     border: 1px solid var(--jobs-primary-color);
@@ -80,9 +89,10 @@
     font-size: 0.9rem;
     background: transparent;
     cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-.job-view-btn:hover, .jobs-btn-apply:hover, .jobs-btn-favorite:hover {
+.job-view-btn:hover, .jobs-btn-apply-toggle:hover, .jobs-btn-favorite:hover {
     background-color: var(--jobs-primary-color);
     color: #fff;
 }
@@ -90,4 +100,55 @@
 .jobs-search-results.loading {
     opacity: 0.5;
     pointer-events: none;
+}
+
+/* Pagination */
+.jobs-pagination {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 30px;
+    align-items: center;
+}
+
+.jobs-pagination .page-link {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--jobs-primary-color);
+    color: var(--jobs-primary-color);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.jobs-pagination .page-link:hover,
+.jobs-pagination .page-link.active {
+    background-color: var(--jobs-primary-color);
+    color: #fff;
+}
+
+/* Quick Apply Form */
+.jobs-quick-apply-form {
+    margin-top: 15px;
+    padding: 15px;
+    border-top: 1px solid rgba(29, 52, 105, 0.1);
+    background-color: rgba(255, 255, 255, 0.9); /* Slightly more opaque for readability */
+    border-radius: 0 0 8px 8px;
+    position: relative;
+    z-index: 10;
+}
+
+.jobs-quick-apply-form h4 {
+    margin: 0 0 10px 0;
+    font-size: 1rem;
+    color: var(--jobs-primary-color);
+}
+
+.jobs-btn-submit-application {
+    width: 100%;
+    margin-top: 10px;
 }

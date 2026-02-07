@@ -18,19 +18,27 @@ class Jobs {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-jobs-loader.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-jobs-cpt.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-jobs-shortcodes.php';
+        require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-jobs-access-control.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-jobs-admin.php';
+        require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-jobs-meta-boxes.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-jobs-public.php';
 
 		$this->loader = new Jobs_Loader();
 	}
 
 	private function define_admin_hooks() {
+        $plugin_access = new Jobs_Access_Control();
+        $this->loader->add_action( 'init', $plugin_access, 'init' );
+
         $plugin_admin = new Jobs_Admin( $this->get_plugin_name(), $this->get_version() );
 
         $this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
         $this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
         $this->loader->add_action( 'admin_menu', $plugin_admin, 'add_admin_menu' );
         $this->loader->add_action( 'admin_init', $plugin_admin, 'register_settings' );
+
+        $plugin_meta_boxes = new Jobs_Meta_Boxes();
+        $this->loader->add_action( 'init', $plugin_meta_boxes, 'init' );
 	}
 
 	private function define_public_hooks() {

@@ -11,6 +11,10 @@ class Jobs_Shortcodes {
 
     public function process_registration() {
         if ( isset( $_POST['jobs_register'] ) ) {
+            if ( ! isset( $_POST['jobs_registration_nonce'] ) || ! wp_verify_nonce( $_POST['jobs_registration_nonce'], 'jobs_register_action' ) ) {
+                return; // Silently fail or handle error if feasible, but usually we just stop processing.
+            }
+
             $username = sanitize_user( $_POST['username'] );
             $email    = sanitize_email( $_POST['email'] );
             $password = $_POST['password'];
@@ -49,6 +53,7 @@ class Jobs_Shortcodes {
         $search_title = get_option( 'jobs_search_title', 'JOBS' );
 		?>
 		<div class="jobs-search-container">
+            <?php if ( is_front_page() ) : ?>
 			<div class="jobs-header-logo">
                 <?php if ( $logo_url ) : ?>
                     <img src="<?php echo esc_url( $logo_url ); ?>" alt="<?php echo esc_attr( $search_title ); ?>" class="jobs-logo">
@@ -56,6 +61,7 @@ class Jobs_Shortcodes {
 				    <div class="site-logo"><?php echo esc_html( $search_title ); ?></div>
                 <?php endif; ?>
 			</div>
+            <?php endif; ?>
 			<form class="jobs-search-form" action="" method="get" id="jobs-search-form">
 				<input type="text" name="jobs_query" id="jobs-search-input" placeholder="Search jobs...">
 
@@ -197,6 +203,7 @@ class Jobs_Shortcodes {
         echo $message;
 		?>
         <form class="jobs-register-form" method="post">
+            <?php wp_nonce_field( 'jobs_register_action', 'jobs_registration_nonce' ); ?>
             <input type="text" name="username" placeholder="Username" required>
             <input type="email" name="email" placeholder="Email" required>
             <input type="password" name="password" placeholder="Password" required>
