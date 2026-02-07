@@ -1,0 +1,33 @@
+:root {
+    --jobs-primary-color: #1d3469;
+}
+
+body {
+    font-family: 'Rubik', sans-serif;
+}
+
+/* General Styling */
+h1, h2, h3, h4, h5, h6, a, button, input, select, textarea, label {
+    color: var(--jobs-primary-color);
+}
+
+button {
+    background-color: transparent;
+    border: 2px solid var(--jobs-primary-color);
+    color: var(--jobs-primary-color);
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+button:hover {
+    background-color: var(--jobs-primary-color);
+    color: white;
+}
+
+input, select, textarea {
+    border: 1px solid var(--jobs-primary-color);
+    padding: 8px;
+    background: transparent;
+    border-radius: 4px;
+}

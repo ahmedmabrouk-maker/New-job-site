@@ -1,58 +1,4 @@
 jQuery(document).ready(function($) {
-    // Toggle Modules Dropdown
-    $('#jobs-modules-trigger').on('click', function(e) {
-        e.stopPropagation();
-        $('#jobs-modules-list').toggle();
-        $('#jobs-user-menu').hide();
-    });
-
-    // Toggle User Menu
-    $('#jobs-user-trigger').on('click', function(e) {
-        e.stopPropagation();
-        $('#jobs-user-menu').toggle();
-        $('#jobs-modules-list').hide();
-    });
-
-    // Close dropdowns on click outside
-    $(document).on('click', function() {
-        $('#jobs-modules-list').hide();
-        $('#jobs-user-menu').hide();
-    });
-
-    // Load Module
-    $('.jobs-modules-list li').on('click', function() {
-        var module = $(this).data('module');
-        if (!module) return;
-
-        // AJAX call to load module
-        $.ajax({
-            url: jobs_ajax.ajax_url,
-            type: 'POST',
-            data: {
-                action: 'jobs_load_module',
-                nonce: jobs_ajax.nonce,
-                module: module
-            },
-            success: function(response) {
-                if (response.success) {
-                    $('#jobs-modal-body').html(response.data);
-                    $('#jobs-modal').fadeIn();
-                } else {
-                    alert('Error loading module: ' + (response.data || 'Unknown error'));
-                }
-            },
-            error: function() {
-                alert('AJAX Error');
-            }
-        });
-    });
-
-    // Close Modal
-    $('.jobs-close, .jobs-modal').on('click', function(e) {
-        if (e.target !== this && !$(e.target).hasClass('jobs-close')) return;
-        $('#jobs-modal').fadeOut();
-    });
-
     // Live Job Search
     var searchTimeout;
 
@@ -109,8 +55,6 @@ jQuery(document).ready(function($) {
          performSearch();
     }
 
-    // --- Action Handlers (Moved from Modules) ---
-
     // Quick Apply Handler (Frontend)
     $(document).on('click', '.jobs-btn-apply', function(e) {
         e.preventDefault();
@@ -126,11 +70,7 @@ jQuery(document).ready(function($) {
                     job_id: jobId
                 },
                 success: function(response) {
-                    if (response.success) {
-                        alert(response.data);
-                    } else {
-                        alert(response.data);
-                    }
+                    alert(response.data);
                 }
             });
         }
@@ -151,18 +91,12 @@ jQuery(document).ready(function($) {
             },
             success: function(response) {
                 if (response.success) {
-                     // Update UI based on context
                      if (response.data.action === 'added') {
                          btn.text('Saved');
                          alert('Job added to favorites.');
                      } else {
                          btn.text('Save');
-                         // If we are in the favorites module (list view), remove the card
-                         if (btn.closest('.jobs-module-container').length) {
-                             btn.closest('.job-card').fadeOut();
-                         } else {
-                             alert('Job removed from favorites.');
-                         }
+                         alert('Job removed from favorites.');
                      }
                 } else {
                     alert(response.data);
@@ -170,36 +104,4 @@ jQuery(document).ready(function($) {
             }
         });
     });
-
-    // Job Review Queue Handlers (Approve/Reject)
-    $(document).on('click', '.jobs-btn-approve', function() {
-        updateJobStatus($(this).data('id'), 'publish');
-    });
-
-    $(document).on('click', '.jobs-btn-reject', function() {
-        if(confirm('Are you sure you want to reject this job?')) {
-            updateJobStatus($(this).data('id'), 'trash');
-        }
-    });
-
-    function updateJobStatus(id, status) {
-        $.ajax({
-            url: jobs_ajax.ajax_url,
-            type: 'POST',
-            data: {
-                action: 'jobs_update_job_status',
-                nonce: jobs_ajax.nonce,
-                job_id: id,
-                status: status
-            },
-            success: function(response) {
-                if (response.success) {
-                    $('#job-review-' + id).slideUp(function() { $(this).remove(); });
-                } else {
-                    alert(response.data);
-                }
-            }
-        });
-    }
-
 });

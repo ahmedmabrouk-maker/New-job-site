@@ -12,16 +12,37 @@ class Jobs_Public {
 
 	public function enqueue_styles() {
 		wp_enqueue_style( 'google-fonts-rubik', 'https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700&display=swap', array(), null );
-		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/jobs-public.css', array(), time() );
+		wp_enqueue_style( $this->plugin_name . '-global', plugin_dir_url( __FILE__ ) . 'css/jobs-global.css', array(), time() );
+
+        // Conditionally load styles based on presence of shortcodes or role
+        global $post;
+        if ( is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'jobs_search' ) ) {
+            wp_enqueue_style( $this->plugin_name . '-search', plugin_dir_url( __FILE__ ) . 'css/jobs-search.css', array(), time() );
+        }
+
+        if ( is_user_logged_in() ) {
+            wp_enqueue_style( $this->plugin_name . '-top-bar', plugin_dir_url( __FILE__ ) . 'css/jobs-top-bar.css', array(), time() );
+        }
 	}
 
 	public function enqueue_scripts() {
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/jobs-public.js', array( 'jquery' ), time(), true );
+        // Global script (dependency)
+        wp_enqueue_script( $this->plugin_name . '-global', plugin_dir_url( __FILE__ ) . 'js/jobs-global.js', array( 'jquery' ), time(), true );
 
-        wp_localize_script( $this->plugin_name, 'jobs_ajax', array(
+        wp_localize_script( $this->plugin_name . '-global', 'jobs_ajax', array(
             'ajax_url' => admin_url( 'admin-ajax.php' ),
             'nonce'    => wp_create_nonce( 'jobs-ajax-nonce' )
         ));
+
+        // Conditionally load scripts
+        global $post;
+        if ( is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'jobs_search' ) ) {
+            wp_enqueue_script( $this->plugin_name . '-search', plugin_dir_url( __FILE__ ) . 'js/jobs-search.js', array( 'jquery', $this->plugin_name . '-global' ), time(), true );
+        }
+
+        if ( is_user_logged_in() ) {
+            wp_enqueue_script( $this->plugin_name . '-top-bar', plugin_dir_url( __FILE__ ) . 'js/jobs-top-bar.js', array( 'jquery', $this->plugin_name . '-global' ), time(), true );
+        }
 	}
 
     public function inject_top_bar() {
@@ -326,7 +347,26 @@ class Jobs_Public {
             ob_start();
             include $file_path;
             $content = ob_get_clean();
-            wp_send_json_success( $content );
+
+            // Look for optional module assets
+            $css_url = '';
+            $js_url  = '';
+
+            $module_css_path = plugin_dir_path( dirname( __FILE__ ) ) . 'modules/css/' . $module . '.css';
+            if ( file_exists( $module_css_path ) ) {
+                $css_url = plugin_dir_url( dirname( __FILE__ ) ) . 'modules/css/' . $module . '.css';
+            }
+
+            $module_js_path = plugin_dir_path( dirname( __FILE__ ) ) . 'modules/js/' . $module . '.js';
+            if ( file_exists( $module_js_path ) ) {
+                $js_url = plugin_dir_url( dirname( __FILE__ ) ) . 'modules/js/' . $module . '.js';
+            }
+
+            wp_send_json_success( array(
+                'html'    => $content,
+                'css_url' => $css_url,
+                'js_url'  => $js_url
+            ) );
         } else {
             wp_send_json_error( 'Module file not found' );
         }
