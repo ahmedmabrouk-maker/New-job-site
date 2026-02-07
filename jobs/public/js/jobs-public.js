@@ -52,4 +52,60 @@ jQuery(document).ready(function($) {
         if (e.target !== this && !$(e.target).hasClass('jobs-close')) return;
         $('#jobs-modal').fadeOut();
     });
+
+    // Live Job Search
+    var searchTimeout;
+
+    function performSearch() {
+        var keyword = $('#jobs-search-input').val();
+        var specialization = $('#jobs-filter-specialization').val();
+        var category = $('#jobs-filter-category').val();
+        var country = $('#jobs-filter-country').val();
+        var city = $('#jobs-filter-city').val();
+
+        $.ajax({
+            url: jobs_ajax.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'jobs_search',
+                nonce: jobs_ajax.nonce,
+                keyword: keyword,
+                specialization: specialization,
+                category: category,
+                country: country,
+                city: city
+            },
+            beforeSend: function() {
+                $('#jobs-search-results').addClass('loading');
+            },
+            success: function(response) {
+                $('#jobs-search-results').removeClass('loading');
+                if (response.success) {
+                    $('#jobs-search-results').html(response.data);
+                }
+            }
+        });
+    }
+
+    // Debounce text input
+    $('#jobs-search-input').on('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(performSearch, 500);
+    });
+
+    // Immediate search on select change
+    $('#jobs-filter-specialization, #jobs-filter-category, #jobs-filter-country, #jobs-filter-city').on('change', function() {
+        performSearch();
+    });
+
+    // Prevent form submit
+    $('#jobs-search-form').on('submit', function(e) {
+        e.preventDefault();
+        performSearch();
+    });
+
+    // Initial search if fields have values (e.g. back button)
+    if ($('#jobs-search-input').val() || $('#jobs-filter-specialization').val() || $('#jobs-filter-category').val() || $('#jobs-filter-country').val() || $('#jobs-filter-city').val()) {
+         performSearch();
+    }
 });

@@ -40,6 +40,109 @@ class Jobs_Public {
         }
     }
 
+    public function ajax_search_jobs() {
+        check_ajax_referer( 'jobs-ajax-nonce', 'nonce' );
+
+        $paged = isset( $_POST['paged'] ) ? intval( $_POST['paged'] ) : 1;
+        $args = array(
+            'post_type' => 'job',
+            'post_status' => 'publish',
+            's' => isset( $_POST['keyword'] ) ? sanitize_text_field( $_POST['keyword'] ) : '',
+            'paged' => $paged,
+            'tax_query' => array( 'relation' => 'AND' )
+        );
+
+        if ( ! empty( $_POST['specialization'] ) ) {
+            $args['tax_query'][] = array(
+                'taxonomy' => 'job_specialization',
+                'field'    => 'slug',
+                'terms'    => sanitize_text_field( $_POST['specialization'] ),
+            );
+        }
+
+        if ( ! empty( $_POST['category'] ) ) {
+            $args['tax_query'][] = array(
+                'taxonomy' => 'job_category',
+                'field'    => 'slug',
+                'terms'    => sanitize_text_field( $_POST['category'] ),
+            );
+        }
+
+        if ( ! empty( $_POST['country'] ) ) {
+            $args['tax_query'][] = array(
+                'taxonomy' => 'job_country',
+                'field'    => 'slug',
+                'terms'    => sanitize_text_field( $_POST['country'] ),
+            );
+        }
+
+        if ( ! empty( $_POST['city'] ) ) {
+            $args['tax_query'][] = array(
+                'taxonomy' => 'job_city',
+                'field'    => 'slug',
+                'terms'    => sanitize_text_field( $_POST['city'] ),
+            );
+        }
+
+        $query = new WP_Query( $args );
+
+        ob_start();
+
+        if ( $query->have_posts() ) {
+            echo '<div class="jobs-grid">';
+            while ( $query->have_posts() ) {
+                $query->the_post();
+                $this->render_job_card();
+            }
+            echo '</div>';
+        } else {
+            echo '<p class="no-jobs-found">No jobs found matching your criteria.</p>';
+        }
+
+        $content = ob_get_clean();
+        wp_reset_postdata();
+
+        wp_send_json_success( $content );
+    }
+
+    private function render_job_card() {
+        ?>
+        <div class="job-card">
+            <h3 class="job-title"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
+
+            <div class="job-meta">
+                <?php
+                $specializations = get_the_terms( get_the_ID(), 'job_specialization' );
+                if ( $specializations && ! is_wp_error( $specializations ) ) {
+                    foreach ( $specializations as $term ) {
+                        echo '<span class="job-capsule capsule-specialization">' . esc_html( $term->name ) . '</span>';
+                    }
+                }
+
+                $categories = get_the_terms( get_the_ID(), 'job_category' );
+                if ( $categories && ! is_wp_error( $categories ) ) {
+                     foreach ( $categories as $term ) {
+                        echo '<span class="job-capsule capsule-category">' . esc_html( $term->name ) . '</span>';
+                    }
+                }
+
+                $countries = get_the_terms( get_the_ID(), 'job_country' );
+                if ( $countries && ! is_wp_error( $countries ) ) {
+                     foreach ( $countries as $term ) {
+                        echo '<span class="job-capsule capsule-location">' . esc_html( $term->name ) . '</span>';
+                    }
+                }
+                ?>
+            </div>
+
+            <div class="job-excerpt">
+                <?php the_excerpt(); ?>
+            </div>
+             <a href="<?php the_permalink(); ?>" class="job-view-btn">View Job</a>
+        </div>
+        <?php
+    }
+
     public function load_module() {
         check_ajax_referer( 'jobs-ajax-nonce', 'nonce' );
 

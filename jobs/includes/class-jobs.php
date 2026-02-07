@@ -52,6 +52,9 @@ class Jobs {
         // AJAX
         $this->loader->add_action( 'wp_ajax_jobs_load_module', $plugin_public, 'load_module' );
         $this->loader->add_action( 'wp_ajax_nopriv_jobs_load_module', $plugin_public, 'load_module' );
+
+        $this->loader->add_action( 'wp_ajax_jobs_search', $plugin_public, 'ajax_search_jobs' );
+        $this->loader->add_action( 'wp_ajax_nopriv_jobs_search', $plugin_public, 'ajax_search_jobs' );
 	}
 
 	public function run() {

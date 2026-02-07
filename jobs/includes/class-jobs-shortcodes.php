@@ -57,13 +57,13 @@ class Jobs_Shortcodes {
 				    <div class="site-logo"><?php echo esc_html( $search_title ); ?></div>
                 <?php endif; ?>
 			</div>
-			<form class="jobs-search-form" action="" method="get">
-				<input type="text" name="jobs_query" placeholder="Search jobs...">
+			<form class="jobs-search-form" action="" method="get" id="jobs-search-form">
+				<input type="text" name="jobs_query" id="jobs-search-input" placeholder="Search jobs...">
 
                 <?php
                 // Specialization
                 $specializations = get_terms( array( 'taxonomy' => 'job_specialization', 'hide_empty' => false ) );
-                echo '<select name="specialization"><option value="">Specialization</option>';
+                echo '<select name="specialization" id="jobs-filter-specialization"><option value="">Specialization</option>';
                 if ( ! empty( $specializations ) && ! is_wp_error( $specializations ) ) {
                     foreach ( $specializations as $term ) {
                         echo '<option value="' . esc_attr( $term->slug ) . '">' . esc_html( $term->name ) . '</option>';
@@ -71,9 +71,19 @@ class Jobs_Shortcodes {
                 }
                 echo '</select>';
 
+                // Category
+                $categories = get_terms( array( 'taxonomy' => 'job_category', 'hide_empty' => false ) );
+                echo '<select name="category" id="jobs-filter-category"><option value="">Category</option>';
+                if ( ! empty( $categories ) && ! is_wp_error( $categories ) ) {
+                    foreach ( $categories as $term ) {
+                        echo '<option value="' . esc_attr( $term->slug ) . '">' . esc_html( $term->name ) . '</option>';
+                    }
+                }
+                echo '</select>';
+
                 // Country
                 $countries = get_terms( array( 'taxonomy' => 'job_country', 'hide_empty' => false ) );
-                echo '<select name="country"><option value="">Country</option>';
+                echo '<select name="country" id="jobs-filter-country"><option value="">Country</option>';
                  if ( ! empty( $countries ) && ! is_wp_error( $countries ) ) {
                     foreach ( $countries as $term ) {
                         echo '<option value="' . esc_attr( $term->slug ) . '">' . esc_html( $term->name ) . '</option>';
@@ -83,7 +93,7 @@ class Jobs_Shortcodes {
 
                 // City
                 $cities = get_terms( array( 'taxonomy' => 'job_city', 'hide_empty' => false ) );
-                echo '<select name="city"><option value="">City</option>';
+                echo '<select name="city" id="jobs-filter-city"><option value="">City</option>';
                  if ( ! empty( $cities ) && ! is_wp_error( $cities ) ) {
                     foreach ( $cities as $term ) {
                         echo '<option value="' . esc_attr( $term->slug ) . '">' . esc_html( $term->name ) . '</option>';
@@ -92,11 +102,11 @@ class Jobs_Shortcodes {
                 echo '</select>';
                 ?>
 
-				<button type="submit">Search</button>
+				<button type="submit" id="jobs-search-submit">Search</button>
 			</form>
 		</div>
 
-        <div class="jobs-search-results">
+        <div class="jobs-search-results" id="jobs-search-results">
         <?php
         if ( isset( $_GET['jobs_query'] ) ) {
             $paged = ( get_query_var( 'paged' ) ) ? get_query_var( 'paged' ) : 1;

@@ -117,6 +117,32 @@ class Jobs_CPT {
 		);
 
 		register_taxonomy( 'job_city', array( 'job' ), $args_city );
+
+        // Category
+        $labels_cat = array(
+            'name'              => _x( 'Categories', 'taxonomy general name', 'jobs' ),
+            'singular_name'     => _x( 'Category', 'taxonomy singular name', 'jobs' ),
+            'search_items'      => __( 'Search Categories', 'jobs' ),
+            'all_items'         => __( 'All Categories', 'jobs' ),
+            'parent_item'       => __( 'Parent Category', 'jobs' ),
+            'parent_item_colon' => __( 'Parent Category:', 'jobs' ),
+            'edit_item'         => __( 'Edit Category', 'jobs' ),
+            'update_item'       => __( 'Update Category', 'jobs' ),
+            'add_new_item'      => __( 'Add New Category', 'jobs' ),
+            'new_item_name'     => __( 'New Category Name', 'jobs' ),
+            'menu_name'         => __( 'Category', 'jobs' ),
+        );
+
+        $args_cat = array(
+            'hierarchical'      => true,
+            'labels'            => $labels_cat,
+            'show_ui'           => true,
+            'show_admin_column' => true,
+            'query_var'         => true,
+            'rewrite'           => array( 'slug' => 'job-category' ),
+        );
+
+        register_taxonomy( 'job_category', array( 'job' ), $args_cat );
 	}
 
 }
