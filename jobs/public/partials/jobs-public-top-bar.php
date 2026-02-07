@@ -5,6 +5,11 @@
              <span class="dashicons dashicons-grid-view"></span>
         </div>
 
+        <!-- Notifications Trigger -->
+        <div class="jobs-notifications-trigger" title="Notifications" style="margin-right: 15px; cursor: pointer;">
+             <span class="dashicons dashicons-bell"></span>
+        </div>
+
         <!-- User Avatar -->
          <div class="jobs-user-profile" id="jobs-user-trigger">
             <?php echo get_avatar( get_current_user_id(), 32 ); ?>

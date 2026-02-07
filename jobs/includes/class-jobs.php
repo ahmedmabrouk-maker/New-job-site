@@ -19,6 +19,7 @@ class Jobs {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-jobs-cpt.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-jobs-shortcodes.php';
         require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-jobs-access-control.php';
+        require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-jobs-notifications.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-jobs-admin.php';
         require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-jobs-meta-boxes.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-jobs-public.php';
@@ -29,6 +30,9 @@ class Jobs {
 	private function define_admin_hooks() {
         $plugin_access = new Jobs_Access_Control();
         $this->loader->add_action( 'init', $plugin_access, 'init' );
+
+        $plugin_notifications = new Jobs_Notifications();
+        $this->loader->add_action( 'init', $plugin_notifications, 'init' );
 
         $plugin_admin = new Jobs_Admin( $this->get_plugin_name(), $this->get_version() );
 
@@ -47,6 +51,7 @@ class Jobs {
         $this->loader->add_action( 'init', $plugin_cpt, 'register_cpt' );
         $this->loader->add_action( 'init', $plugin_cpt, 'register_taxonomies' );
         $this->loader->add_action( 'init', $plugin_cpt, 'register_application_cpt' );
+        $this->loader->add_action( 'init', $plugin_cpt, 'register_notification_cpt' );
 
         // Shortcodes
         $plugin_shortcodes = new Jobs_Shortcodes();
@@ -70,6 +75,9 @@ class Jobs {
         $this->loader->add_action( 'wp_ajax_jobs_update_job_status', $plugin_public, 'ajax_update_job_status' );
         $this->loader->add_action( 'wp_ajax_jobs_apply_job', $plugin_public, 'ajax_apply_job' );
         $this->loader->add_action( 'wp_ajax_jobs_toggle_favorite', $plugin_public, 'ajax_toggle_favorite' );
+        $this->loader->add_action( 'wp_ajax_jobs_save_cv', $plugin_public, 'ajax_save_cv' );
+        $this->loader->add_action( 'wp_ajax_jobs_save_company', $plugin_public, 'ajax_save_company' );
+        $this->loader->add_action( 'wp_ajax_jobs_update_settings', $plugin_public, 'ajax_update_settings' );
 	}
 
 	public function run() {

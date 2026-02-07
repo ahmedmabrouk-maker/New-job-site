@@ -182,4 +182,23 @@ class Jobs_CPT {
         register_post_type( 'application', $args );
     }
 
+    public function register_notification_cpt() {
+        $labels = array(
+            'name' => _x( 'Notifications', 'post type general name', 'jobs' ),
+            'singular_name' => _x( 'Notification', 'post type singular name', 'jobs' ),
+        );
+
+        $args = array(
+            'labels' => $labels,
+            'public' => false,
+            'publicly_queryable' => false,
+            'show_ui' => false, // Hidden from admin menu
+            'rewrite' => false,
+            'capability_type' => 'post',
+            'supports' => array( 'title', 'editor', 'author' ),
+        );
+
+        register_post_type( 'job_notification', $args );
+    }
+
 }

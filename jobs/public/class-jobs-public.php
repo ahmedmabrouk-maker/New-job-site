@@ -42,6 +42,7 @@ class Jobs_Public {
 
         if ( is_user_logged_in() ) {
             wp_enqueue_script( $this->plugin_name . '-top-bar', plugin_dir_url( __FILE__ ) . 'js/jobs-top-bar.js', array( 'jquery', $this->plugin_name . '-global' ), time(), true );
+            wp_enqueue_script( $this->plugin_name . '-notifications', plugin_dir_url( __FILE__ ) . 'js/jobs-notifications.js', array( 'jquery', $this->plugin_name . '-top-bar' ), time(), true );
         }
 	}
 
@@ -266,6 +267,62 @@ class Jobs_Public {
             <?php endif; ?>
         </div>
         <?php
+    }
+
+    public function ajax_save_cv() {
+        check_ajax_referer( 'jobs-ajax-nonce', 'nonce' );
+        if ( ! is_user_logged_in() ) wp_send_json_error( 'Login required.' );
+
+        $user_id = get_current_user_id();
+        $cv_data = array(
+            'experience' => sanitize_textarea_field( $_POST['experience'] ),
+            'education'  => sanitize_textarea_field( $_POST['education'] ),
+            'skills'     => sanitize_text_field( $_POST['skills'] )
+        );
+
+        update_user_meta( $user_id, '_jobs_cv_data', $cv_data );
+        wp_send_json_success( 'CV Saved.' );
+    }
+
+    public function ajax_update_settings() {
+        check_ajax_referer( 'jobs-ajax-nonce', 'nonce' );
+        if ( ! is_user_logged_in() ) wp_send_json_error( 'Login required.' );
+
+        $user_id = get_current_user_id();
+        $email = sanitize_email( $_POST['user_email'] );
+        $pass  = $_POST['user_pass'];
+        $pass_confirm = $_POST['user_pass_confirm'];
+
+        if ( ! is_email( $email ) ) wp_send_json_error( 'Invalid email.' );
+
+        // Update Email
+        if ( $email !== wp_get_current_user()->user_email ) {
+            if ( email_exists( $email ) ) wp_send_json_error( 'Email already in use.' );
+            wp_update_user( array( 'ID' => $user_id, 'user_email' => $email ) );
+        }
+
+        // Update Password
+        if ( ! empty( $pass ) ) {
+            if ( $pass !== $pass_confirm ) wp_send_json_error( 'Passwords do not match.' );
+            wp_update_user( array( 'ID' => $user_id, 'user_pass' => $pass ) );
+        }
+
+        wp_send_json_success( 'Settings updated.' );
+    }
+
+    public function ajax_save_company() {
+        check_ajax_referer( 'jobs-ajax-nonce', 'nonce' );
+        if ( ! is_user_logged_in() ) wp_send_json_error( 'Login required.' );
+
+        $user_id = get_current_user_id();
+        $company_data = array(
+            'company_name'        => sanitize_text_field( $_POST['company_name'] ),
+            'company_description' => sanitize_textarea_field( $_POST['company_description'] ),
+            'company_website'     => esc_url_raw( $_POST['company_website'] )
+        );
+
+        update_user_meta( $user_id, '_jobs_company_data', $company_data );
+        wp_send_json_success( 'Company Profile Saved.' );
     }
 
     public function ajax_toggle_favorite() {
