@@ -138,9 +138,171 @@ class Jobs_Public {
             <div class="job-excerpt">
                 <?php the_excerpt(); ?>
             </div>
-             <a href="<?php the_permalink(); ?>" class="job-view-btn">View Job</a>
+            <div class="job-actions">
+                 <a href="<?php the_permalink(); ?>" class="job-view-btn">View Job</a>
+                 <?php if ( is_user_logged_in() ) : ?>
+                    <button class="jobs-btn-apply" data-job-id="<?php the_ID(); ?>">Apply Now</button>
+                    <button class="jobs-btn-favorite" data-job-id="<?php the_ID(); ?>">Save</button>
+                 <?php else : ?>
+                    <a href="#" class="jobs-login-required">Login to Apply</a>
+                 <?php endif; ?>
+            </div>
         </div>
         <?php
+    }
+
+    public function ajax_toggle_favorite() {
+        check_ajax_referer( 'jobs-ajax-nonce', 'nonce' );
+
+        if ( ! is_user_logged_in() ) {
+            wp_send_json_error( 'Login required.' );
+        }
+
+        $job_id = isset( $_POST['job_id'] ) ? intval( $_POST['job_id'] ) : 0;
+        if ( ! $job_id ) {
+            wp_send_json_error( 'Invalid Job ID.' );
+        }
+
+        $user_id = get_current_user_id();
+        $favorites = get_user_meta( $user_id, '_jobs_favorites', true );
+        if ( ! is_array( $favorites ) ) {
+            $favorites = array();
+        }
+
+        if ( in_array( $job_id, $favorites ) ) {
+            $key = array_search( $job_id, $favorites );
+            unset( $favorites[$key] );
+            $action = 'removed';
+        } else {
+            $favorites[] = $job_id;
+            $action = 'added';
+        }
+
+        update_user_meta( $user_id, '_jobs_favorites', array_values( $favorites ) );
+        wp_send_json_success( array( 'action' => $action ) );
+    }
+
+    public function ajax_apply_job() {
+        check_ajax_referer( 'jobs-ajax-nonce', 'nonce' );
+
+        if ( ! is_user_logged_in() ) {
+            wp_send_json_error( 'You must be logged in to apply.' );
+        }
+
+        $job_id = isset( $_POST['job_id'] ) ? intval( $_POST['job_id'] ) : 0;
+        if ( ! $job_id ) {
+            wp_send_json_error( 'Invalid Job ID.' );
+        }
+
+        // Check if already applied
+        $user_id = get_current_user_id();
+        $existing = new WP_Query( array(
+            'post_type' => 'application',
+            'meta_query' => array(
+                'relation' => 'AND',
+                array( 'key' => '_job_id', 'value' => $job_id ),
+                array( 'key' => '_applicant_id', 'value' => $user_id )
+            )
+        ) );
+
+        if ( $existing->have_posts() ) {
+            wp_send_json_error( 'You have already applied for this job.' );
+        }
+
+        $application_data = array(
+            'post_title'  => 'Application for Job #' . $job_id . ' by User #' . $user_id,
+            'post_type'   => 'application',
+            'post_status' => 'publish',
+            'post_author' => $user_id
+        );
+
+        $app_id = wp_insert_post( $application_data );
+
+        if ( is_wp_error( $app_id ) ) {
+             wp_send_json_error( $app_id->get_error_message() );
+        }
+
+        update_post_meta( $app_id, '_job_id', $job_id );
+        update_post_meta( $app_id, '_applicant_id', $user_id );
+
+        wp_send_json_success( 'Application submitted successfully.' );
+    }
+
+    public function ajax_update_job_status() {
+        check_ajax_referer( 'jobs-ajax-nonce', 'nonce' );
+
+        if ( ! is_user_logged_in() ) {
+             wp_send_json_error( 'Access denied.' );
+        }
+
+        $user = wp_get_current_user();
+        $roles = ( array ) $user->roles;
+        if ( ! in_array( 'reviewer', $roles ) && ! in_array( 'administrator', $roles ) ) {
+             wp_send_json_error( 'Access denied.' );
+        }
+
+        $job_id = isset( $_POST['job_id'] ) ? intval( $_POST['job_id'] ) : 0;
+        $status = sanitize_text_field( $_POST['status'] );
+
+        if ( ! $job_id || ! in_array( $status, array( 'publish', 'trash' ) ) ) {
+            wp_send_json_error( 'Invalid request.' );
+        }
+
+        $updated = wp_update_post( array(
+            'ID' => $job_id,
+            'post_status' => $status
+        ) );
+
+        if ( is_wp_error( $updated ) ) {
+            wp_send_json_error( $updated->get_error_message() );
+        }
+
+        wp_send_json_success( 'Job status updated.' );
+    }
+
+    public function ajax_post_job() {
+        check_ajax_referer( 'jobs-ajax-nonce', 'nonce' );
+
+        if ( ! is_user_logged_in() ) {
+            wp_send_json_error( 'You must be logged in to post a job.' );
+        }
+
+        // Basic validation
+        if ( empty( $_POST['job_title'] ) || empty( $_POST['job_description'] ) ) {
+            wp_send_json_error( 'Title and description are required.' );
+        }
+
+        $user_id = get_current_user_id();
+
+        $job_data = array(
+            'post_title'    => sanitize_text_field( $_POST['job_title'] ),
+            'post_content'  => wp_kses_post( $_POST['job_description'] ),
+            'post_status'   => 'pending', // Pending review
+            'post_type'     => 'job',
+            'post_author'   => $user_id
+        );
+
+        $job_id = wp_insert_post( $job_data );
+
+        if ( is_wp_error( $job_id ) ) {
+            wp_send_json_error( $job_id->get_error_message() );
+        }
+
+        // Set Taxonomies
+        if ( ! empty( $_POST['job_specialization'] ) ) {
+            wp_set_post_terms( $job_id, array( intval( $_POST['job_specialization'] ) ), 'job_specialization' );
+        }
+        if ( ! empty( $_POST['job_category'] ) ) {
+            wp_set_post_terms( $job_id, array( intval( $_POST['job_category'] ) ), 'job_category' );
+        }
+        if ( ! empty( $_POST['job_country'] ) ) {
+            wp_set_post_terms( $job_id, array( intval( $_POST['job_country'] ) ), 'job_country' );
+        }
+        if ( ! empty( $_POST['job_city'] ) ) {
+            wp_set_post_terms( $job_id, array( intval( $_POST['job_city'] ) ), 'job_city' );
+        }
+
+        wp_send_json_success( 'Job posted successfully.' );
     }
 
     public function load_module() {

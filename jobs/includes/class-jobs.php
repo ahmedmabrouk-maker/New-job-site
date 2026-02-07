@@ -38,10 +38,12 @@ class Jobs {
         $plugin_cpt = new Jobs_CPT();
         $this->loader->add_action( 'init', $plugin_cpt, 'register_cpt' );
         $this->loader->add_action( 'init', $plugin_cpt, 'register_taxonomies' );
+        $this->loader->add_action( 'init', $plugin_cpt, 'register_application_cpt' );
 
         // Shortcodes
         $plugin_shortcodes = new Jobs_Shortcodes();
         $this->loader->add_action( 'init', $plugin_shortcodes, 'register_shortcodes' );
+        $this->loader->add_action( 'init', $plugin_shortcodes, 'process_registration' );
 
         // Public UI
         $plugin_public = new Jobs_Public( $this->get_plugin_name(), $this->get_version() );
@@ -55,6 +57,11 @@ class Jobs {
 
         $this->loader->add_action( 'wp_ajax_jobs_search', $plugin_public, 'ajax_search_jobs' );
         $this->loader->add_action( 'wp_ajax_nopriv_jobs_search', $plugin_public, 'ajax_search_jobs' );
+
+        $this->loader->add_action( 'wp_ajax_jobs_post_job', $plugin_public, 'ajax_post_job' );
+        $this->loader->add_action( 'wp_ajax_jobs_update_job_status', $plugin_public, 'ajax_update_job_status' );
+        $this->loader->add_action( 'wp_ajax_jobs_apply_job', $plugin_public, 'ajax_apply_job' );
+        $this->loader->add_action( 'wp_ajax_jobs_toggle_favorite', $plugin_public, 'ajax_toggle_favorite' );
 	}
 
 	public function run() {

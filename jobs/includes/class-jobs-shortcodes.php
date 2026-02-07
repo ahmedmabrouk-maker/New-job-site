@@ -7,7 +7,6 @@ class Jobs_Shortcodes {
 		add_shortcode( 'jobs_login', array( $this, 'render_login' ) );
 		add_shortcode( 'jobs_register', array( $this, 'render_register' ) );
 		add_shortcode( 'jobs_admin_panel', array( $this, 'render_admin_panel' ) );
-        add_action( 'init', array( $this, 'process_registration' ) );
 	}
 
     public function process_registration() {

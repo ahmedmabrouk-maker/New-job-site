@@ -145,4 +145,41 @@ class Jobs_CPT {
         register_taxonomy( 'job_category', array( 'job' ), $args_cat );
 	}
 
+    public function register_application_cpt() {
+        $labels = array(
+            'name'               => _x( 'Applications', 'post type general name', 'jobs' ),
+            'singular_name'      => _x( 'Application', 'post type singular name', 'jobs' ),
+            'menu_name'          => _x( 'Applications', 'admin menu', 'jobs' ),
+            'name_admin_bar'     => _x( 'Application', 'add new on admin bar', 'jobs' ),
+            'add_new'            => _x( 'Add New', 'application', 'jobs' ),
+            'add_new_item'       => __( 'Add New Application', 'jobs' ),
+            'new_item'           => __( 'New Application', 'jobs' ),
+            'edit_item'          => __( 'Edit Application', 'jobs' ),
+            'view_item'          => __( 'View Application', 'jobs' ),
+            'all_items'          => __( 'All Applications', 'jobs' ),
+            'search_items'       => __( 'Search Applications', 'jobs' ),
+            'parent_item_colon'  => __( 'Parent Applications:', 'jobs' ),
+            'not_found'          => __( 'No applications found.', 'jobs' ),
+            'not_found_in_trash' => __( 'No applications found in Trash.', 'jobs' )
+        );
+
+        $args = array(
+            'labels'             => $labels,
+            'description'        => __( 'Job Applications.', 'jobs' ),
+            'public'             => false,  // Not public on frontend
+            'publicly_queryable' => false,
+            'show_ui'            => true,
+            'show_in_menu'       => true,
+            'query_var'          => true,
+            'rewrite'            => array( 'slug' => 'application' ),
+            'capability_type'    => 'post',
+            'has_archive'        => false,
+            'hierarchical'       => false,
+            'menu_position'      => null,
+            'supports'           => array( 'title', 'author', 'custom-fields' )
+        );
+
+        register_post_type( 'application', $args );
+    }
+
 }
