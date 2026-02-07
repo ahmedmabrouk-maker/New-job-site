@@ -1,9 +1,10 @@
 jQuery(document).ready(function($) {
     $('.jobs-notifications-trigger').on('click', function() {
-        // Trigger the Support module which will have the Inbox tab
-        // Or specific notification logic.
-        // For now, let's load the Support module directly.
-        var module = 'support';
+        var module = 'notifications';
+
+        // We can reuse the load logic from top-bar if exposed, or replicate it.
+        // For consistency with asset loading, simulating a click on a hidden menu item is hacky but effective if item exists.
+        // However, we can just perform the AJAX call and handle response exactly like top-bar.js
 
         $.ajax({
             url: jobs_ajax.ajax_url,
@@ -16,18 +17,20 @@ jQuery(document).ready(function($) {
             success: function(response) {
                 if (response.success) {
                     $('#jobs-modal-body').html(response.data.html);
-                    // ... (Asset injection logic skipped for brevity, assumed handled by top-bar.js generic loader if reused)
-                    // Since this is a custom trigger, we might need to manually trigger the asset loader or reuse the existing click handler.
-                    // Let's just simulate a click on the support menu item if it exists, or duplicate the loader logic.
-                    // Simpler: Trigger click on the hidden support list item.
+                    $('#jobs-modal-content').addClass('jobs-modal-dropdown').removeClass('jobs-modal-full'); // Notification is dropdown style
 
-                    var supportItem = $('.jobs-modules-list li[data-module="support"]');
-                    if (supportItem.length) {
-                        supportItem.click();
-                    } else {
-                        // Fallback if support not in menu (should be there)
-                        alert('Support module not available.');
+                    if (response.data.css_url) {
+                         if (!$('link[href="' + response.data.css_url + '"]').length) {
+                             $('<link>').attr({ rel: 'stylesheet', type: 'text/css', href: response.data.css_url }).appendTo('head');
+                         }
                     }
+                    if (response.data.js_url) {
+                        if (!$('script[src="' + response.data.js_url + '"]').length) {
+                             $.getScript(response.data.js_url);
+                        }
+                    }
+
+                    $('#jobs-modal').fadeIn();
                 }
             }
         });

@@ -65,7 +65,7 @@
 
 <!-- Modal for module content -->
 <div id="jobs-modal" class="jobs-modal" style="display:none;">
-    <div class="jobs-modal-content">
+    <div class="jobs-modal-content" id="jobs-modal-content">
         <span class="jobs-close">&times;</span>
         <div id="jobs-modal-body"></div>
     </div>

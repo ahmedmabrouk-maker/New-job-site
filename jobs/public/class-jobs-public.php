@@ -112,7 +112,7 @@ class Jobs_Public {
             $lng = floatval( $_POST['lng'] );
 
             // Custom query to sort by distance using meta fields
-            add_filter( 'posts_join', array( $this, 'join_meta_for_distance' ) );
+            // add_filter( 'posts_join', array( $this, 'join_meta_for_distance' ) ); // Removed undefined callback
             add_filter( 'posts_orderby', function( $orderby ) use ( $lat, $lng ) {
                 global $wpdb;
                 // Simplified Haversine or Euclidean distance for sorting
@@ -487,7 +487,8 @@ class Jobs_Public {
             'job-posting', 'job-listings-history', 'public-profile',
             'applications-submitted', 'cv-resume', 'company-profile',
             'job-requests', 'favorites', 'drafts', 'support',
-            'settings', 'advanced-settings', 'terms-conditions', 'articles'
+            'settings', 'advanced-settings', 'terms-conditions', 'articles',
+            'notifications', 'analytics'
         );
 
         if ( ! in_array( $module, $allowed_modules ) ) {

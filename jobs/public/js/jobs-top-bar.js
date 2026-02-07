@@ -43,6 +43,19 @@ jQuery(document).ready(function($) {
                 if (response.success) {
                     $('#jobs-modal-body').html(response.data.html);
 
+                    // Determine Modal Type (Default to Full, check for Dropdown hint)
+                    // We can check the module name or look for a specific class in the returned HTML
+                    var modalContent = $('#jobs-modal-content');
+                    modalContent.removeClass('jobs-modal-full jobs-modal-dropdown');
+
+                    var dropdownModules = ['cv-resume', 'favorites', 'drafts', 'support', 'settings', 'notifications'];
+
+                    if (dropdownModules.includes(module)) {
+                        modalContent.addClass('jobs-modal-dropdown');
+                    } else {
+                        modalContent.addClass('jobs-modal-full');
+                    }
+
                     // Inject CSS if present
                     if (response.data.css_url) {
                          if (!$('link[href="' + response.data.css_url + '"]').length) {
