@@ -49,18 +49,29 @@ class Jobs_Top_Bar {
 			</div>
 			<div class="jobs-dropdown-menu">
 				<ul>
-					<?php if ( in_array( 'employer', $roles ) || in_array( 'reviewer', $roles ) || in_array( 'administrator', $roles ) ) : ?>
-						<?php if ( in_array( 'employer', $roles ) ) : ?>
+					<?php
+					$is_employer = in_array( 'employer', $roles );
+					$is_reviewer = in_array( 'reviewer', $roles );
+					$is_admin = in_array( 'administrator', $roles );
+					$is_job_seeker = in_array( 'job_seeker', $roles );
+					?>
+
+					<?php if ( $is_employer || $is_reviewer || $is_admin ) : ?>
 						<li><a href="#" onclick="loadJobsModule('job-posting'); return false;">Job Posting</a></li>
 						<li><a href="#" onclick="loadJobsModule('job-listings-history'); return false;">Job Listings History</a></li>
+					<?php endif; ?>
+
+					<?php if ( $is_employer ) : ?>
 						<li><a href="#" onclick="loadJobsModule('company-profile'); return false;">Company Profile</a></li>
-						<?php endif; ?>
+					<?php endif; ?>
+
+					<?php if ( $is_employer || $is_reviewer || $is_admin ) : ?>
 						<li><a href="#" onclick="loadJobsModule('job-requests'); return false;">Job Requests</a></li>
 					<?php endif; ?>
 
 					<li><a href="#" onclick="loadJobsModule('public-profile'); return false;">Public Profile</a></li>
 
-					<?php if ( in_array( 'job_seeker', $roles ) ) : ?>
+					<?php if ( $is_job_seeker ) : ?>
 						<li><a href="#" onclick="loadJobsModule('applications-submitted'); return false;">Applications Submitted</a></li>
 						<li><a href="#" onclick="loadJobsModule('cv-resume'); return false;">CV / Resume</a></li>
 					<?php endif; ?>
