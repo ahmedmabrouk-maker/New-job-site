@@ -23,6 +23,8 @@ class Jobs_Admin {
 	public function register_settings() {
 		register_setting( 'jobs_options_group', 'jobs_logo_url' );
 		register_setting( 'jobs_options_group', 'jobs_primary_color' );
+		register_setting( 'jobs_options_group', 'jobs_font_family' );
+		register_setting( 'jobs_options_group', 'jobs_button_color' );
 
 		add_settings_section(
 			'jobs_general_section',
@@ -46,6 +48,22 @@ class Jobs_Admin {
 			'jobs_admin_settings',
 			'jobs_general_section'
 		);
+
+		add_settings_field(
+			'jobs_font_family',
+			'Font Family',
+			array( $this, 'render_font_field' ),
+			'jobs_admin_settings',
+			'jobs_general_section'
+		);
+
+		add_settings_field(
+			'jobs_button_color',
+			'Button Color',
+			array( $this, 'render_button_color_field' ),
+			'jobs_admin_settings',
+			'jobs_general_section'
+		);
 	}
 
 	public function render_logo_field() {
@@ -60,6 +78,22 @@ class Jobs_Admin {
 		echo '<p class="description">Default: #1d3469</p>';
 	}
 
+	public function render_font_field() {
+		$value = get_option( 'jobs_font_family', 'Rubik' );
+		echo '<select name="jobs_font_family">';
+		echo '<option value="Rubik" ' . selected( $value, 'Rubik', false ) . '>Rubik (Default)</option>';
+		echo '<option value="Arial" ' . selected( $value, 'Arial', false ) . '>Arial</option>';
+		echo '<option value="Helvetica" ' . selected( $value, 'Helvetica', false ) . '>Helvetica</option>';
+		echo '</select>';
+		echo '<p class="description">Select the primary font family.</p>';
+	}
+
+	public function render_button_color_field() {
+		$value = get_option( 'jobs_button_color', '#1d3469' );
+		echo '<input type="text" name="jobs_button_color" value="' . esc_attr( $value ) . '" class="regular-text">';
+		echo '<p class="description">Default: #1d3469</p>';
+	}
+
 	public function enqueue_styles() {
 		wp_enqueue_style( 'jobs-admin-style', JOBS_PLUGIN_URL . 'assets/css/jobs-admin.css', array(), JOBS_VERSION, 'all' );
 	}
@@ -71,7 +105,7 @@ class Jobs_Admin {
 
 			<div class="jobs-admin-dashboard">
 				<div class="jobs-admin-section">
-					<h2>Settings</h2>
+					<h2>General & Design Customization</h2>
 					<form method="post" action="options.php">
 						<?php
 						settings_fields( 'jobs_options_group' );
