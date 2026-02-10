@@ -113,7 +113,7 @@ class Jobs_Shortcodes {
 
 		ob_start();
 
-		$redirect_to = isset( $_REQUEST['redirect_to'] ) ? $_REQUEST['redirect_to'] : home_url();
+		$redirect_to = isset( $_REQUEST['redirect_to'] ) ? $_REQUEST['redirect_to'] : get_permalink();
 
 		$args = array(
 			'echo' => true,
