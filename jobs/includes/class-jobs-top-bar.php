@@ -50,11 +50,15 @@ class Jobs_Top_Bar {
 			<div class="jobs-dropdown-menu">
 				<ul>
 					<?php if ( in_array( 'employer', $roles ) || in_array( 'reviewer', $roles ) || in_array( 'administrator', $roles ) ) : ?>
-						<?php if ( in_array( 'employer', $roles ) ) : ?>
 						<li><a href="#" onclick="loadJobsModule('job-posting'); return false;">Job Posting</a></li>
 						<li><a href="#" onclick="loadJobsModule('job-listings-history'); return false;">Job Listings History</a></li>
+					<?php endif; ?>
+
+					<?php if ( in_array( 'employer', $roles ) ) : ?>
 						<li><a href="#" onclick="loadJobsModule('company-profile'); return false;">Company Profile</a></li>
-						<?php endif; ?>
+					<?php endif; ?>
+
+					<?php if ( in_array( 'employer', $roles ) || in_array( 'reviewer', $roles ) || in_array( 'administrator', $roles ) ) : ?>
 						<li><a href="#" onclick="loadJobsModule('job-requests'); return false;">Job Requests</a></li>
 					<?php endif; ?>
 
