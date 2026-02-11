@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700&display=swap');
 
-body {
+body, input, select, textarea, button {
 	font-family: 'Rubik', sans-serif;
 }
 
@@ -40,6 +40,7 @@ body {
 	height: 40px;
 	border-radius: 50%;
 	margin-right: 10px;
+	border: 2px solid #1d3469;
 }
 
 .jobs-username {
@@ -51,19 +52,22 @@ body {
 	cursor: pointer;
 	color: #1d3469;
 	font-size: 24px;
+	display: flex;
+	align-items: center;
 }
 
 .jobs-dropdown-menu {
 	position: absolute;
-	top: 60px;
+	top: 70px;
 	right: 20px;
-	background: #fff;
-	border: 1px solid #e5e5e5;
-	border-radius: 5px;
-	box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+	background: rgba(255, 255, 255, 0.95); /* Slight opacity for readability */
+	border: 1px solid #1d3469;
+	border-radius: 8px;
+	box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 	display: none;
-	width: 250px;
+	width: 280px;
 	pointer-events: auto;
+	overflow: hidden;
 }
 
 .jobs-dropdown-menu.active {
@@ -77,7 +81,7 @@ body {
 }
 
 .jobs-dropdown-menu li {
-	border-bottom: 1px solid #f0f0f0;
+	border-bottom: 1px solid rgba(29, 52, 105, 0.1);
 }
 
 .jobs-dropdown-menu li:last-child {
@@ -86,14 +90,16 @@ body {
 
 .jobs-dropdown-menu a {
 	display: block;
-	padding: 10px 15px;
+	padding: 12px 20px;
 	text-decoration: none;
 	color: #1d3469;
-	transition: background 0.2s;
+	transition: background 0.2s, padding-left 0.2s;
+	font-weight: 400;
 }
 
 .jobs-dropdown-menu a:hover {
-	background: #f9f9f9;
+	background: rgba(29, 52, 105, 0.05);
+	padding-left: 25px;
 }
 
 /* Modal for modules */
@@ -103,7 +109,8 @@ body {
 	left: 0;
 	width: 100%;
 	height: 100%;
-	background: rgba(0,0,0,0.5);
+	background: rgba(29, 52, 105, 0.1); /* Very light overlay */
+	backdrop-filter: blur(5px); /* Modern glassmorphism */
 	z-index: 10000;
 	display: flex;
 	justify-content: center;
@@ -112,64 +119,166 @@ body {
 }
 
 .jobs-module-content {
-	background: #fff;
-	padding: 30px;
-	width: 80%;
-	max-width: 800px;
-	border-radius: 8px;
+	background: rgba(255, 255, 255, 0.95);
+	padding: 40px;
+	width: 90%;
+	max-width: 900px;
+	border-radius: 15px;
 	position: relative;
-	min-height: 400px;
-	color: #333;
+	min-height: 500px;
+	color: #1d3469;
+	box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+	border: 1px solid #1d3469;
 }
 
 .jobs-close-modal {
 	position: absolute;
-	top: 10px;
-	right: 15px;
-	font-size: 24px;
+	top: 20px;
+	right: 20px;
+	font-size: 28px;
 	cursor: pointer;
-	color: #999;
+	color: #1d3469;
+	opacity: 0.7;
+	transition: opacity 0.2s;
+}
+
+.jobs-close-modal:hover {
+	opacity: 1;
 }
 
 /* Search Form Styles */
 .jobs-search-container {
-	max-width: 800px;
-	margin: 50px auto;
+	max-width: 900px;
+	margin: 100px auto;
 	text-align: center;
+	padding: 20px;
 }
 
 .jobs-search-header {
-	margin-bottom: 30px;
+	margin-bottom: 40px;
 }
 
 .jobs-logo-text {
 	color: #1d3469;
-	font-size: 48px;
+	font-size: 64px;
 	font-weight: 700;
+	margin: 0;
+	letter-spacing: -1px;
+}
+
+.jobs-logo {
+	max-height: 100px;
+	width: auto;
 }
 
 .jobs-search-fields {
 	display: flex;
-	gap: 10px;
+	gap: 15px;
 	justify-content: center;
 	flex-wrap: wrap;
+	align-items: center;
 }
 
 .jobs-input-main, .jobs-select {
-	padding: 10px;
-	border: 1px solid #ccc;
-	border-radius: 4px;
+	padding: 15px 20px;
+	border: 2px solid #1d3469;
+	border-radius: 30px;
 	font-family: 'Rubik', sans-serif;
-	color: #333;
+	font-size: 16px;
+	color: #1d3469;
+	background: transparent;
+	outline: none;
+	min-width: 200px;
+	flex: 1;
+}
+
+.jobs-input-main::placeholder {
+	color: #1d3469;
+	opacity: 0.6;
+}
+
+.jobs-select {
+	cursor: pointer;
+	appearance: none;
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231d3469' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+	background-repeat: no-repeat;
+	background-position: right 15px center;
+	background-size: 16px;
 }
 
 .jobs-submit-btn {
 	background: #1d3469;
 	color: #fff;
-	border: none;
-	padding: 10px 20px;
-	border-radius: 4px;
+	border: 2px solid #1d3469;
+	padding: 15px 30px;
+	border-radius: 30px;
 	cursor: pointer;
 	font-family: 'Rubik', sans-serif;
 	font-weight: 500;
+	font-size: 16px;
+	transition: background 0.2s, color 0.2s;
+}
+
+.jobs-submit-btn:hover {
+	background: transparent;
+	color: #1d3469;
+}
+
+/* Login/Register Forms */
+.jobs-register-container, .jobs-login-form-container {
+	max-width: 400px;
+	margin: 50px auto;
+	padding: 20px;
+	/* Transparent background */
+	background: transparent;
+	color: #1d3469;
+}
+
+.jobs-register-form label, .login-username label, .login-password label {
+	color: #1d3469;
+	font-weight: 500;
+	margin-bottom: 5px;
+	display: block;
+}
+
+.jobs-register-form input[type="text"],
+.jobs-register-form input[type="email"],
+.jobs-register-form input[type="password"],
+.jobs-register-form select,
+#user_login, #user_pass {
+	width: 100%;
+	padding: 12px;
+	border: 2px solid #1d3469;
+	border-radius: 8px;
+	background: transparent;
+	color: #1d3469;
+	font-family: 'Rubik', sans-serif;
+	margin-bottom: 15px;
+	box-sizing: border-box;
+}
+
+.jobs-register-form input[type="submit"], #wp-submit {
+	background: #1d3469;
+	color: #fff;
+	border: 2px solid #1d3469;
+	padding: 12px 24px;
+	border-radius: 8px;
+	cursor: pointer;
+	font-weight: 500;
+	width: 100%;
+	transition: all 0.2s;
+}
+
+.jobs-register-form input[type="submit"]:hover, #wp-submit:hover {
+	background: transparent;
+	color: #1d3469;
+}
+
+.jobs-success {
+	color: #1d3469;
+	background: rgba(29, 52, 105, 0.1);
+	padding: 15px;
+	border-radius: 8px;
+	margin-bottom: 20px;
+	text-align: center;
 }
