@@ -27,7 +27,8 @@ class Jobs_Top_Bar {
 		$roles = ( array ) $user->roles;
 
 		// Check if user has access to top bar
-		if ( ! in_array( 'job_seeker', $roles ) && ! in_array( 'employer', $roles ) && ! in_array( 'reviewer', $roles ) && ! in_array( 'administrator', $roles ) ) {
+		// All defined roles should have access
+		if ( ! array_intersect( $roles, array( 'job_seeker', 'employer', 'reviewer', 'administrator', 'system_administrator' ) ) ) {
 			return;
 		}
 
@@ -49,12 +50,17 @@ class Jobs_Top_Bar {
 			</div>
 			<div class="jobs-dropdown-menu">
 				<ul>
-					<?php if ( in_array( 'employer', $roles ) || in_array( 'reviewer', $roles ) || in_array( 'administrator', $roles ) ) : ?>
-						<?php if ( in_array( 'employer', $roles ) ) : ?>
+					<?php
+					// Modules for non-Job Seekers (Employer, Reviewer, Admin)
+					if ( ! in_array( 'job_seeker', $roles ) ) :
+					?>
 						<li><a href="#" onclick="loadJobsModule('job-posting'); return false;">Job Posting</a></li>
 						<li><a href="#" onclick="loadJobsModule('job-listings-history'); return false;">Job Listings History</a></li>
-						<li><a href="#" onclick="loadJobsModule('company-profile'); return false;">Company Profile</a></li>
+
+						<?php if ( in_array( 'employer', $roles ) ) : ?>
+							<li><a href="#" onclick="loadJobsModule('company-profile'); return false;">Company Profile</a></li>
 						<?php endif; ?>
+
 						<li><a href="#" onclick="loadJobsModule('job-requests'); return false;">Job Requests</a></li>
 					<?php endif; ?>
 
@@ -70,7 +76,7 @@ class Jobs_Top_Bar {
 					<li><a href="#" onclick="loadJobsModule('support'); return false;">Support</a></li>
 					<li><a href="#" onclick="loadJobsModule('settings'); return false;">Settings</a></li>
 
-					<?php if ( in_array( 'administrator', $roles ) ) : ?>
+					<?php if ( current_user_can( 'manage_options' ) ) : // Admins & System Admins ?>
 						<li><a href="<?php echo admin_url( 'admin.php?page=jobs_admin' ); ?>">Advanced Settings</a></li>
 					<?php endif; ?>
 

@@ -41,6 +41,11 @@ class Jobs_Activator {
 			'read' => true,
 			'edit_others_posts' => true, // Reviewers might need to see/edit others' posts
 		) );
+
+		// System Administrator
+		$admin_role = get_role( 'administrator' );
+		$admin_caps = $admin_role ? $admin_role->capabilities : array();
+		add_role( 'system_administrator', 'System Administrator', $admin_caps );
 	}
 
 	/**

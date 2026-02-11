@@ -23,7 +23,6 @@ class Jobs_Shortcodes {
 
 			// Basic validation
 			if ( empty( $username ) || empty( $email ) || empty( $password ) ) {
-				// In a real scenario, handle error gracefully (e.g. redirect with error code)
 				return;
 			}
 
@@ -35,7 +34,7 @@ class Jobs_Shortcodes {
 			$user_id = wp_create_user( $username, $password, $email );
 
 			if ( is_wp_error( $user_id ) ) {
-				// Handle error
+				// Handle error - ideally show it to user
 			} else {
 				$user = new WP_User( $user_id );
 				$user->set_role( $role );
@@ -49,22 +48,24 @@ class Jobs_Shortcodes {
 
 	public function render_search( $atts ) {
 		ob_start();
+		$title = get_option( 'jobs_search_title', 'Jobs' );
+		$placeholder = get_option( 'jobs_search_placeholder', 'Search jobs...' );
+		$logo_url = get_option( 'jobs_logo_url', '' );
 		?>
 		<div class="jobs-search-container">
 			<div class="jobs-search-header">
 				<?php
-				$logo_url = get_option( 'jobs_logo_url', '' );
 				if ( $logo_url ) {
-					echo '<img src="' . esc_url( $logo_url ) . '" alt="Jobs Logo" class="jobs-logo">';
+					echo '<img src="' . esc_url( $logo_url ) . '" alt="' . esc_attr( $title ) . '" class="jobs-logo">';
 				} else {
-					echo '<h1 class="jobs-logo-text">Jobs</h1>';
+					echo '<h1 class="jobs-logo-text">' . esc_html( $title ) . '</h1>';
 				}
 				?>
 			</div>
 			<form role="search" method="get" class="jobs-search-form" action="<?php echo esc_url( home_url( '/' ) ); ?>">
 				<input type="hidden" name="post_type" value="job" />
 				<div class="jobs-search-fields">
-					<input type="text" name="s" placeholder="Search jobs..." class="jobs-input-main" />
+					<input type="text" name="s" placeholder="<?php echo esc_attr( $placeholder ); ?>" class="jobs-input-main" />
 					<select name="job_specialization" class="jobs-select">
 						<option value="">Specialization</option>
 						<?php
@@ -113,7 +114,19 @@ class Jobs_Shortcodes {
 
 		ob_start();
 
-		$redirect_to = isset( $_REQUEST['redirect_to'] ) ? $_REQUEST['redirect_to'] : home_url();
+		$redirect_to = isset( $_REQUEST['redirect_to'] ) ? $_REQUEST['redirect_to'] : '';
+		if ( ! $redirect_to && isset( $_SERVER['HTTP_REFERER'] ) ) {
+			$referer = $_SERVER['HTTP_REFERER'];
+			// Avoid loop if referer is the current page (assuming login is on a specific page)
+			// But since this is a shortcode, it might be embedded anywhere.
+			// Best practice: redirect to home if no specific referer or referer is login.
+			// However, requirement says "redirected back to the page they were previously viewing".
+			// If the user lands on /login, the referer is where they came from.
+			$redirect_to = $referer;
+		}
+		if ( ! $redirect_to ) {
+			$redirect_to = home_url();
+		}
 
 		$args = array(
 			'echo' => true,
