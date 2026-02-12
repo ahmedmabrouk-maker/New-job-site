@@ -8,6 +8,7 @@ class Jobs_Top_Bar {
 	}
 
 	public function enqueue_styles() {
+		wp_enqueue_style( 'jobs-google-fonts', 'https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700&display=swap', array(), null );
 		wp_enqueue_style( 'jobs-public-style', JOBS_PLUGIN_URL . 'assets/css/jobs-public.css', array(), JOBS_VERSION, 'all' );
 		wp_enqueue_style( 'dashicons' );
 
@@ -50,9 +51,9 @@ class Jobs_Top_Bar {
 			<div class="jobs-dropdown-menu">
 				<ul>
 					<?php if ( in_array( 'employer', $roles ) || in_array( 'reviewer', $roles ) || in_array( 'administrator', $roles ) ) : ?>
-						<?php if ( in_array( 'employer', $roles ) ) : ?>
 						<li><a href="#" onclick="loadJobsModule('job-posting'); return false;">Job Posting</a></li>
 						<li><a href="#" onclick="loadJobsModule('job-listings-history'); return false;">Job Listings History</a></li>
+						<?php if ( in_array( 'employer', $roles ) ) : ?>
 						<li><a href="#" onclick="loadJobsModule('company-profile'); return false;">Company Profile</a></li>
 						<?php endif; ?>
 						<li><a href="#" onclick="loadJobsModule('job-requests'); return false;">Job Requests</a></li>
