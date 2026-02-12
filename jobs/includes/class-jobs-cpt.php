@@ -4,7 +4,73 @@ class Jobs_CPT {
 
 	public function __construct() {
 		add_action( 'init', array( $this, 'register_post_type' ) );
+		add_action( 'init', array( $this, 'register_application_cpt' ) );
+		add_action( 'init', array( $this, 'register_notification_cpt' ) );
 		add_action( 'init', array( $this, 'register_taxonomies' ) );
+	}
+
+	public function register_application_cpt() {
+		$labels = array(
+			'name'                  => _x( 'Applications', 'Post Type General Name', 'jobs' ),
+			'singular_name'         => _x( 'Application', 'Post Type Singular Name', 'jobs' ),
+			'menu_name'             => __( 'Applications', 'jobs' ),
+			'all_items'             => __( 'All Applications', 'jobs' ),
+			'add_new_item'          => __( 'Add New Application', 'jobs' ),
+			'edit_item'             => __( 'Edit Application', 'jobs' ),
+			'update_item'           => __( 'Update Application', 'jobs' ),
+			'view_item'             => __( 'View Application', 'jobs' ),
+			'search_items'          => __( 'Search Application', 'jobs' ),
+		);
+		$args = array(
+			'label'                 => __( 'Application', 'jobs' ),
+			'description'           => __( 'Job Applications', 'jobs' ),
+			'labels'                => $labels,
+			'supports'              => array( 'title', 'editor', 'custom-fields' ),
+			'hierarchical'          => false,
+			'public'                => false, // Not public
+			'show_ui'               => true,
+			'show_in_menu'          => 'edit.php?post_type=job', // Submenu of Jobs
+			'show_in_admin_bar'     => false,
+			'show_in_nav_menus'     => false,
+			'can_export'            => true,
+			'has_archive'           => false,
+			'exclude_from_search'   => true,
+			'publicly_queryable'    => false,
+			'capability_type'       => 'post',
+		);
+		register_post_type( 'application', $args );
+	}
+
+	public function register_notification_cpt() {
+		$labels = array(
+			'name'                  => _x( 'Notifications', 'Post Type General Name', 'jobs' ),
+			'singular_name'         => _x( 'Notification', 'Post Type Singular Name', 'jobs' ),
+			'menu_name'             => __( 'Notifications', 'jobs' ),
+			'all_items'             => __( 'All Notifications', 'jobs' ),
+			'add_new_item'          => __( 'Add New Notification', 'jobs' ),
+			'edit_item'             => __( 'Edit Notification', 'jobs' ),
+			'update_item'           => __( 'Update Notification', 'jobs' ),
+			'view_item'             => __( 'View Notification', 'jobs' ),
+			'search_items'          => __( 'Search Notification', 'jobs' ),
+		);
+		$args = array(
+			'label'                 => __( 'Notification', 'jobs' ),
+			'description'           => __( 'System Notifications', 'jobs' ),
+			'labels'                => $labels,
+			'supports'              => array( 'title', 'editor', 'custom-fields' ),
+			'hierarchical'          => false,
+			'public'                => false, // Not public
+			'show_ui'               => true,
+			'show_in_menu'          => 'edit.php?post_type=job', // Submenu of Jobs
+			'show_in_admin_bar'     => false,
+			'show_in_nav_menus'     => false,
+			'can_export'            => true,
+			'has_archive'           => false,
+			'exclude_from_search'   => true,
+			'publicly_queryable'    => false,
+			'capability_type'       => 'post',
+		);
+		register_post_type( 'job_notification', $args );
 	}
 
 	public function register_post_type() {

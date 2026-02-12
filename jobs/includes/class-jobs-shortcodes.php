@@ -61,7 +61,7 @@ class Jobs_Shortcodes {
 				}
 				?>
 			</div>
-			<form role="search" method="get" class="jobs-search-form" action="<?php echo esc_url( home_url( '/' ) ); ?>">
+			<form role="search" method="get" id="jobs-search-form" class="jobs-search-form" action="<?php echo esc_url( home_url( '/' ) ); ?>">
 				<input type="hidden" name="post_type" value="job" />
 				<div class="jobs-search-fields">
 					<input type="text" name="s" placeholder="Search jobs..." class="jobs-input-main" />
@@ -101,6 +101,7 @@ class Jobs_Shortcodes {
 					<button type="submit" class="jobs-submit-btn">Search</button>
 				</div>
 			</form>
+			<div id="jobs-search-results"></div>
 		</div>
 		<?php
 		return ob_get_clean();
