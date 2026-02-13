@@ -8,6 +8,7 @@ class Jobs_CPT {
 	}
 
 	public function register_post_type() {
+		// Job Post Type
 		$labels = array(
 			'name'                  => _x( 'Jobs', 'Post Type General Name', 'jobs' ),
 			'singular_name'         => _x( 'Job', 'Post Type Singular Name', 'jobs' ),
@@ -58,6 +59,56 @@ class Jobs_CPT {
 			'capability_type'       => 'post',
 		);
 		register_post_type( 'job', $args );
+
+		// Job Application Post Type
+		$labels_app = array(
+			'name'                  => _x( 'Applications', 'Post Type General Name', 'jobs' ),
+			'singular_name'         => _x( 'Application', 'Post Type Singular Name', 'jobs' ),
+			'menu_name'             => __( 'Applications', 'jobs' ),
+			'name_admin_bar'        => __( 'Application', 'jobs' ),
+		);
+		$args_app = array(
+			'label'                 => __( 'Application', 'jobs' ),
+			'description'           => __( 'Job Applications', 'jobs' ),
+			'labels'                => $labels_app,
+			'supports'              => array( 'title', 'editor', 'custom-fields' ),
+			'hierarchical'          => false,
+			'public'                => false, // Internal use mainly
+			'show_ui'               => true,
+			'show_in_menu'          => 'edit.php?post_type=job', // Submenu of Jobs
+			'show_in_admin_bar'     => false,
+			'show_in_nav_menus'     => false,
+			'can_export'            => true,
+			'has_archive'           => false,
+			'exclude_from_search'   => true,
+			'publicly_queryable'    => false,
+			'capability_type'       => 'post',
+		);
+		register_post_type( 'job_application', $args_app );
+
+		// Job Notification Post Type
+		$labels_notif = array(
+			'name'                  => _x( 'Notifications', 'Post Type General Name', 'jobs' ),
+			'singular_name'         => _x( 'Notification', 'Post Type Singular Name', 'jobs' ),
+			'menu_name'             => __( 'Notifications', 'jobs' ),
+		);
+		$args_notif = array(
+			'label'                 => __( 'Notification', 'jobs' ),
+			'description'           => __( 'System Notifications', 'jobs' ),
+			'labels'                => $labels_notif,
+			'supports'              => array( 'title', 'editor', 'custom-fields' ),
+			'hierarchical'          => false,
+			'public'                => false,
+			'show_ui'               => true,
+			'show_in_menu'          => 'edit.php?post_type=job',
+			'show_in_admin_bar'     => false,
+			'show_in_nav_menus'     => false,
+			'can_export'            => true,
+			'exclude_from_search'   => true,
+			'publicly_queryable'    => false,
+			'capability_type'       => 'post',
+		);
+		register_post_type( 'job_notification', $args_notif );
 	}
 
 	public function register_taxonomies() {

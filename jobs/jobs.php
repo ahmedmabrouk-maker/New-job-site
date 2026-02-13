@@ -111,3 +111,16 @@ function run_jobs_ajax() {
 	$plugin = new Jobs_Ajax();
 }
 run_jobs_ajax();
+
+/**
+ * Include the Access Control class.
+ */
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-jobs-access-control.php';
+
+/**
+ * Instantiate the Access Control class.
+ */
+function run_jobs_access_control() {
+	new Jobs_Access_Control();
+}
+run_jobs_access_control();
