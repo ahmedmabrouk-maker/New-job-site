@@ -136,13 +136,33 @@ class Jobs_Ajax {
 			}
 		}
 
+		// Sanitize courses
+		$courses = isset( $_POST['courses'] ) ? $_POST['courses'] : array();
+		$clean_courses = array();
+		if ( is_array( $courses ) ) {
+			foreach ( $courses as $crs ) {
+				$clean_courses[] = array_map( 'sanitize_text_field', $crs );
+			}
+		}
+
+		// Sanitize certifications
+		$certifications = isset( $_POST['certifications'] ) ? $_POST['certifications'] : array();
+		$clean_certifications = array();
+		if ( is_array( $certifications ) ) {
+			foreach ( $certifications as $cert ) {
+				$clean_certifications[] = array_map( 'sanitize_text_field', $cert );
+			}
+		}
+
 		// Sanitize skills
 		$skills = isset( $_POST['skills'] ) ? sanitize_text_field( $_POST['skills'] ) : '';
 
 		$cv_data = array(
-			'education'  => $clean_education,
-			'experience' => $clean_experience,
-			'skills'     => $skills,
+			'education'      => $clean_education,
+			'experience'     => $clean_experience,
+			'courses'        => $clean_courses,
+			'certifications' => $clean_certifications,
+			'skills'         => $skills,
 		);
 
 		update_user_meta( $user_id, '_jobs_cv_data', $cv_data );
@@ -351,6 +371,14 @@ class Jobs_Ajax {
 		$new_email = sanitize_email( $_POST['email'] );
 		$new_password = $_POST['password'];
 
+		// Check for rate limiting
+		if ( ! in_array( 'administrator', (array) $user->roles ) ) {
+			$last_update = get_user_meta( $user->ID, '_jobs_last_account_update', true );
+			if ( $last_update && ( time() - $last_update ) < 30 * DAY_IN_SECONDS ) {
+				wp_send_json_error( 'You can only update your account details once every 30 days.' );
+			}
+		}
+
 		$user_data = array( 'ID' => $user->ID );
 
 		if ( is_email( $new_email ) && $new_email !== $user->user_email ) {
@@ -369,6 +397,7 @@ class Jobs_Ajax {
 			if ( is_wp_error( $user_id ) ) {
 				wp_send_json_error( $user_id->get_error_message() );
 			}
+			update_user_meta( $user->ID, '_jobs_last_account_update', time() );
 			wp_send_json_success( 'Account details updated.' );
 		} else {
 			wp_send_json_success( 'No changes made.' );

@@ -71,11 +71,11 @@ class Jobs_Top_Bar {
 					<li><a href="#" onclick="loadJobsModule('settings'); return false;">Settings</a></li>
 
 					<?php if ( in_array( 'administrator', $roles ) ) : ?>
-						<li><a href="<?php echo admin_url( 'admin.php?page=jobs_admin' ); ?>">Advanced Settings</a></li>
+						<li><a href="#" onclick="loadJobsModule('advanced-settings'); return false;">Advanced Settings</a></li>
 					<?php endif; ?>
 
 					<li><a href="#" onclick="loadJobsModule('terms-conditions'); return false;">Terms & Conditions</a></li>
-					<li><a href="<?php echo home_url( '/articles' ); ?>">Articles</a></li>
+					<li><a href="#" onclick="loadJobsModule('articles'); return false;">Articles</a></li>
 				</ul>
 			</div>
 
