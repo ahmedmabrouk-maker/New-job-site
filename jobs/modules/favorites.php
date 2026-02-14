@@ -17,19 +17,17 @@ if ( ! is_array( $favorites ) || empty( $favorites ) ) {
 	return;
 }
 
-// Fetch jobs
+// Get favorites (reversed for most recent first)
+$favorites = array_reverse( $favorites );
+
+// Fetch jobs (pass all to allow skipping deleted ones)
 $args = array(
 	'post_type'      => 'job',
 	'post_status'    => 'publish',
 	'post__in'       => $favorites,
-	'posts_per_page' => 5, // "Displays the last five saved job listings"
-	'orderby'        => 'post__in', // Maintain order? Or date? Prompt says "last five saved". Assuming array order is chronological.
+	'posts_per_page' => 5,
+	'orderby'        => 'post__in',
 );
-
-// If we want "last saved", we should assume new ones are appended or prepended.
-// Let's query by post__in and order by date for now, or assume favorites array is ordered.
-// Actually, `post__in` order is not guaranteed unless `orderby` is `post__in`.
-// Let's just show the valid ones.
 
 $fav_query = new WP_Query( $args );
 
