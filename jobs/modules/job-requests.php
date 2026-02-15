@@ -11,6 +11,49 @@ if ( ! is_user_logged_in() ) {
 $user = wp_get_current_user();
 $roles = ( array ) $user->roles;
 
+// JOB SEEKER VIEW: Responses / Offers
+if ( in_array( 'job_seeker', $roles ) ) {
+	echo '<div class="jobs-module-header"><h2>Employer Responses & Offers</h2></div>';
+
+	$args = array(
+		'post_type'      => 'job_application',
+		'post_status'    => array( 'publish', 'trash' ), // Showing processed applications
+		'author'         => $user->ID,
+		'posts_per_page' => -1,
+	);
+	$responses = new WP_Query( $args );
+
+	if ( $responses->have_posts() ) {
+		echo '<div class="jobs-requests-list">';
+		while ( $responses->have_posts() ) {
+			$responses->the_post();
+			$post_obj = get_post();
+			$status = get_post_status();
+			$display_status = ( $status === 'trash' ) ? 'Rejected' : ucfirst( $status );
+
+			$job_id = get_post_meta( get_the_ID(), '_job_id', true );
+			if ( ! $job_id && $post_obj ) $job_id = $post_obj->post_parent;
+
+			$job_title = get_the_title( $job_id );
+
+			echo '<div class="jobs-request-item">';
+			echo '<div class="jobs-request-info">';
+			echo '<strong>Response for: ' . esc_html( $job_title ) . '</strong>';
+			echo '<br><span class="jobs-status status-' . esc_attr( $status ) . '">Status: ' . esc_html( $display_status ) . '</span>';
+			echo '</div>';
+			echo '<div class="jobs-request-actions">';
+			echo '<a href="' . get_permalink( $job_id ) . '" target="_blank" class="button button-small">View Job</a>';
+			echo '</div>';
+			echo '</div>';
+		}
+		echo '</div>';
+		wp_reset_postdata();
+	} else {
+		echo '<p>No responses received yet.</p>';
+	}
+	echo '<hr>';
+}
+
 // REVIEWER / ADMIN VIEW: Pending Jobs
 if ( in_array( 'reviewer', $roles ) || in_array( 'administrator', $roles ) ) {
 
@@ -76,8 +119,9 @@ if ( in_array( 'employer', $roles ) || in_array( 'administrator', $roles ) ) { /
 			echo '<div class="jobs-requests-list">';
 			while ( $applications->have_posts() ) {
 				$applications->the_post();
-				$job_id = $post->post_parent;
-				$applicant_id = $post->post_author;
+				$post_obj = get_post();
+				$job_id = $post_obj->post_parent;
+				$applicant_id = $post_obj->post_author;
 				$applicant = get_userdata( $applicant_id );
 				$job_title = get_the_title( $job_id );
 

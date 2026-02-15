@@ -30,18 +30,42 @@ $public_profile_hidden = get_user_meta( $user->ID, '_jobs_hide_public_profile', 
 	<h3>Change Account Details</h3>
 	<p class="description">You can change your details once per month.</p>
 
+	<?php
+	$can_update = true;
+	$next_update_msg = '';
+	if ( ! in_array( 'administrator', (array) $user->roles ) ) {
+		$last_update = get_user_meta( $user->ID, '_jobs_last_account_update', true );
+		if ( $last_update ) {
+			$days_since = ( current_time( 'timestamp' ) - $last_update ) / ( 60 * 60 * 24 );
+			if ( $days_since < 30 ) {
+				$can_update = false;
+				$next_update = date_i18n( get_option( 'date_format' ), $last_update + ( 30 * 24 * 60 * 60 ) );
+				$next_update_msg = 'You can update your account details again on ' . $next_update;
+			}
+		}
+	}
+	?>
+
+	<?php if ( ! $can_update ) : ?>
+		<p style="color: #f00;"><?php echo esc_html( $next_update_msg ); ?></p>
+	<?php endif; ?>
+
 	<form id="jobs-account-form" class="jobs-form">
 		<div class="jobs-form-group">
 			<label for="new_email">New Email</label>
-			<input type="email" name="new_email" id="new_email" value="<?php echo esc_attr( $user->user_email ); ?>">
+			<input type="email" name="new_email" id="new_email" value="<?php echo esc_attr( $user->user_email ); ?>" <?php echo $can_update ? '' : 'readonly disabled'; ?>>
 		</div>
 
 		<div class="jobs-form-group">
 			<label for="new_password">New Password (leave blank to keep current)</label>
-			<input type="password" name="new_password" id="new_password">
+			<input type="password" name="new_password" id="new_password" <?php echo $can_update ? '' : 'readonly disabled'; ?>>
 		</div>
 
+		<?php if ( $can_update ) : ?>
 		<button type="submit" class="jobs-submit-btn">Update Details</button>
+		<?php else : ?>
+		<button type="button" class="jobs-submit-btn" disabled style="opacity: 0.5; cursor: not-allowed;">Update Details</button>
+		<?php endif; ?>
 		<div id="jobs-account-message"></div>
 	</form>
 </div>

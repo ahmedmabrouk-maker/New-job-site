@@ -348,6 +348,18 @@ class Jobs_Ajax {
 		}
 
 		$user = wp_get_current_user();
+
+		if ( ! in_array( 'administrator', (array) $user->roles ) ) {
+			$last_update = get_user_meta( $user->ID, '_jobs_last_account_update', true );
+			if ( $last_update ) {
+				$days_since = ( current_time( 'timestamp' ) - $last_update ) / ( 60 * 60 * 24 );
+				if ( $days_since < 30 ) {
+					$next_update = date_i18n( get_option( 'date_format' ), $last_update + ( 30 * 24 * 60 * 60 ) );
+					wp_send_json_error( 'You can update your account details again on ' . $next_update );
+				}
+			}
+		}
+
 		$new_email = sanitize_email( $_POST['email'] );
 		$new_password = $_POST['password'];
 
@@ -369,6 +381,7 @@ class Jobs_Ajax {
 			if ( is_wp_error( $user_id ) ) {
 				wp_send_json_error( $user_id->get_error_message() );
 			}
+			update_user_meta( $user->ID, '_jobs_last_account_update', current_time( 'timestamp' ) );
 			wp_send_json_success( 'Account details updated.' );
 		} else {
 			wp_send_json_success( 'No changes made.' );
