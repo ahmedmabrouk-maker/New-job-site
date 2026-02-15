@@ -55,9 +55,9 @@ class Jobs_Top_Bar {
 						<li><a href="#" onclick="loadJobsModule('job-listings-history'); return false;">Job Listings History</a></li>
 						<li><a href="#" onclick="loadJobsModule('company-profile'); return false;">Company Profile</a></li>
 						<?php endif; ?>
-						<li><a href="#" onclick="loadJobsModule('job-requests'); return false;">Job Requests</a></li>
 					<?php endif; ?>
 
+					<li><a href="#" onclick="loadJobsModule('job-requests'); return false;">Job Requests</a></li>
 					<li><a href="#" onclick="loadJobsModule('public-profile'); return false;">Public Profile</a></li>
 
 					<?php if ( in_array( 'job_seeker', $roles ) ) : ?>
@@ -71,7 +71,11 @@ class Jobs_Top_Bar {
 					<li><a href="#" onclick="loadJobsModule('settings'); return false;">Settings</a></li>
 
 					<?php if ( in_array( 'administrator', $roles ) ) : ?>
-						<li><a href="<?php echo admin_url( 'admin.php?page=jobs_admin' ); ?>">Advanced Settings</a></li>
+						<?php
+						$page_ids = get_option( 'jobs_page_ids', array() );
+						$admin_url = isset( $page_ids['admin_panel'] ) ? get_permalink( $page_ids['admin_panel'] ) : '#';
+						?>
+						<li><a href="<?php echo esc_url( $admin_url ); ?>">Advanced Settings</a></li>
 					<?php endif; ?>
 
 					<li><a href="#" onclick="loadJobsModule('terms-conditions'); return false;">Terms & Conditions</a></li>

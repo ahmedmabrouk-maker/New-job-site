@@ -124,3 +124,16 @@ function run_jobs_access_control() {
 	new Jobs_Access_Control();
 }
 run_jobs_access_control();
+
+/**
+ * Include the Admin Panel class.
+ */
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-jobs-admin-panel.php';
+
+/**
+ * Instantiate the Admin Panel class.
+ */
+function run_jobs_admin_panel() {
+	new Jobs_Admin_Panel();
+}
+run_jobs_admin_panel();
