@@ -71,11 +71,15 @@ class Jobs_Top_Bar {
 					<li><a href="#" onclick="loadJobsModule('settings'); return false;">Settings</a></li>
 
 					<?php if ( in_array( 'administrator', $roles ) ) : ?>
-						<li><a href="<?php echo admin_url( 'admin.php?page=jobs_admin' ); ?>">Advanced Settings</a></li>
+						<?php
+						$page_ids = get_option( 'jobs_page_ids', array() );
+						$admin_url = isset( $page_ids['admin_panel'] ) ? get_permalink( $page_ids['admin_panel'] ) : admin_url( 'admin.php?page=jobs_admin' );
+						?>
+						<li><a href="<?php echo esc_url( $admin_url ); ?>">Advanced Settings</a></li>
 					<?php endif; ?>
 
 					<li><a href="#" onclick="loadJobsModule('terms-conditions'); return false;">Terms & Conditions</a></li>
-					<li><a href="<?php echo home_url( '/articles' ); ?>">Articles</a></li>
+					<li><a href="#" onclick="loadJobsModule('articles'); return false;">Articles</a></li>
 				</ul>
 			</div>
 

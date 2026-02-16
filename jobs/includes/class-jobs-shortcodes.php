@@ -6,8 +6,31 @@ class Jobs_Shortcodes {
 		add_shortcode( 'jobs_search', array( $this, 'render_search' ) );
 		add_shortcode( 'jobs_login', array( $this, 'render_login' ) );
 		add_shortcode( 'jobs_register', array( $this, 'render_register' ) );
+		add_shortcode( 'jobs_admin_panel', array( $this, 'render_admin_panel' ) );
 
 		add_action( 'init', array( $this, 'handle_registration' ) );
+	}
+
+	public function render_admin_panel( $atts ) {
+		if ( ! current_user_can( 'administrator' ) ) {
+			return '<p>Access Denied. You must be a System Administrator.</p>';
+		}
+
+		// Ensure Jobs_Admin is available
+		if ( ! class_exists( 'Jobs_Admin' ) ) {
+			require_once plugin_dir_path( __FILE__ ) . 'class-jobs-admin.php';
+		}
+
+		$active_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'dashboard';
+
+		ob_start();
+		$admin = new Jobs_Admin();
+		if ( method_exists( $admin, 'render_admin_content' ) ) {
+			$admin->render_admin_content( $active_tab );
+		} else {
+			echo 'Admin panel content not available.';
+		}
+		return ob_get_clean();
 	}
 
 	public function handle_registration() {
