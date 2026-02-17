@@ -4,9 +4,10 @@
  */
 
 if ( ! is_user_logged_in() ) {
-	echo '<p>You must be logged in to contact support.</p>';
+	echo '<p>You must be logged in.</p>';
 	return;
 }
+
 ?>
 
 <div class="jobs-module-header">
@@ -14,6 +15,7 @@ if ( ! is_user_logged_in() ) {
 </div>
 
 <form id="jobs-support-form" class="jobs-form">
+
 	<div class="jobs-form-group">
 		<label for="support_subject">Subject</label>
 		<input type="text" name="support_subject" id="support_subject" required>
@@ -24,7 +26,9 @@ if ( ! is_user_logged_in() ) {
 		<textarea name="support_message" id="support_message" rows="5" required></textarea>
 	</div>
 
-	<button type="submit" class="jobs-submit-btn">Send Message</button>
+	<div class="jobs-form-actions">
+		<button type="submit" class="jobs-submit-btn">Send Message</button>
+	</div>
 	<div id="jobs-support-message"></div>
 </form>
 
@@ -32,22 +36,15 @@ if ( ! is_user_logged_in() ) {
 jQuery(document).ready(function($) {
 	$('#jobs-support-form').on('submit', function(e) {
 		e.preventDefault();
+		$('#jobs-support-message').text('Sending...');
 
-		var formData = {
-			action: 'jobs_send_support_message',
-			nonce: jobs_ajax.nonce,
-			subject: $('#support_subject').val(),
-			message: $('#support_message').val()
-		};
-
-		$('#jobs-support-message').text('Sending...').css('color', '#333');
+		var formData = $(this).serialize();
+		formData += '&action=jobs_send_support_message&nonce=' + jobs_ajax.nonce;
 
 		$.post(jobs_ajax.ajax_url, formData, function(response) {
-			if (response.success) {
-				$('#jobs-support-message').text(response.data).css('color', 'green');
+			$('#jobs-support-message').text(response.data);
+			if(response.success) {
 				$('#jobs-support-form')[0].reset();
-			} else {
-				$('#jobs-support-message').text(response.data).css('color', 'red');
 			}
 		});
 	});

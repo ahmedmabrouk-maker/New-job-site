@@ -4,104 +4,96 @@
  */
 
 if ( ! is_user_logged_in() ) {
-	echo '<p>You must be logged in to access settings.</p>';
+	echo '<p>You must be logged in.</p>';
 	return;
 }
 
 $user = wp_get_current_user();
-$public_profile_hidden = get_user_meta( $user->ID, '_jobs_hide_public_profile', true );
+$hidden = get_user_meta( $user->ID, '_jobs_hide_public_profile', true );
+
 ?>
 
 <div class="jobs-module-header">
 	<h2>Settings</h2>
 </div>
 
-<!-- Privacy Settings -->
+<!-- Public Profile Visibility -->
 <div class="jobs-section">
-	<h3>Privacy</h3>
+	<h3>Public Profile Visibility</h3>
 	<label>
-		<input type="checkbox" id="hide_public_profile" <?php checked( $public_profile_hidden, '1' ); ?> onchange="togglePublicProfile()">
-		Hide Public Profile
+		<input type="checkbox" id="jobs-toggle-profile" <?php checked( $hidden, 1 ); ?>> Hide my public profile
 	</label>
 </div>
 
-<!-- Account Settings -->
+<!-- Account Information -->
 <div class="jobs-section">
-	<h3>Change Account Details</h3>
-	<p class="description">You can change your details once per month.</p>
-
+	<h3>Account Information</h3>
 	<form id="jobs-account-form" class="jobs-form">
 		<div class="jobs-form-group">
-			<label for="new_email">New Email</label>
-			<input type="email" name="new_email" id="new_email" value="<?php echo esc_attr( $user->user_email ); ?>">
+			<label for="account_email">Email Address</label>
+			<input type="email" name="account_email" id="account_email" value="<?php echo esc_attr( $user->user_email ); ?>" required>
 		</div>
-
 		<div class="jobs-form-group">
-			<label for="new_password">New Password (leave blank to keep current)</label>
-			<input type="password" name="new_password" id="new_password">
+			<label for="account_password">New Password (leave blank to keep current)</label>
+			<input type="password" name="account_password" id="account_password" placeholder="New Password">
 		</div>
-
-		<button type="submit" class="jobs-submit-btn">Update Details</button>
+		<button type="submit" class="jobs-submit-btn">Update Account</button>
 		<div id="jobs-account-message"></div>
 	</form>
 </div>
 
-<!-- Danger Zone -->
-<div class="jobs-section" style="border-color: #f00;">
-	<h3 style="color: #f00;">Danger Zone</h3>
-	<button class="button button-secondary" style="color: #f00; border-color: #f00;" onclick="deleteAccount()">Delete Account</button>
+<!-- Delete Account -->
+<?php if ( ! in_array( 'administrator', (array) $user->roles ) ) : ?>
+<div class="jobs-section" style="border-top: 1px solid #eee; padding-top: 20px; color: #dc3545;">
+	<h3>Danger Zone</h3>
+	<p>Once you delete your account, there is no going back. Please be certain.</p>
+	<button id="jobs-delete-account-btn" class="button" style="background: #dc3545; color: #fff; border: none;">Delete Account</button>
 </div>
+<?php endif; ?>
 
 <script>
-function togglePublicProfile() {
-	var isChecked = document.getElementById('hide_public_profile').checked;
-	jQuery.post(jobs_ajax.ajax_url, {
-		action: 'jobs_toggle_public_profile',
-		nonce: jobs_ajax.nonce,
-		hidden: isChecked ? 1 : 0
-	});
-}
-
-function deleteAccount() {
-	if (confirm('Are you sure you want to PERMANENTLY delete your account? This action cannot be undone.')) {
-		jQuery.post(jobs_ajax.ajax_url, {
-			action: 'jobs_delete_account',
-			nonce: jobs_ajax.nonce
-		}, function(response) {
-			if (response.success) {
-				alert(response.data);
-				window.location.reload(); // Should redirect to home or login
-			} else {
-				alert(response.data);
-			}
-		});
-	}
-}
-
 jQuery(document).ready(function($) {
+	// Toggle Profile Visibility
+	$('#jobs-toggle-profile').on('change', function() {
+		var hidden = $(this).is(':checked') ? 1 : 0;
+		$.post(jobs_ajax.ajax_url, {
+			action: 'jobs_toggle_public_profile',
+			nonce: jobs_ajax.nonce,
+			hidden: hidden
+		}, function(response) {
+			// Optional feedback
+		});
+	});
+
+	// Update Account
 	$('#jobs-account-form').on('submit', function(e) {
 		e.preventDefault();
+		$('#jobs-account-message').text('Updating...');
 
-		var formData = {
+		$.post(jobs_ajax.ajax_url, {
 			action: 'jobs_update_account_settings',
 			nonce: jobs_ajax.nonce,
-			email: $('#new_email').val(),
-			password: $('#new_password').val()
-		};
-
-		$('#jobs-account-message').text('Updating...').css('color', '#333');
-
-		$.post(jobs_ajax.ajax_url, formData, function(response) {
-			if (response.success) {
-				$('#jobs-account-message').text(response.data).css('color', 'green');
-			} else {
-				$('#jobs-account-message').text(response.data).css('color', 'red');
-			}
+			email: $('#account_email').val(),
+			password: $('#account_password').val()
+		}, function(response) {
+			$('#jobs-account-message').text(response.data);
 		});
+	});
+
+	// Delete Account
+	$('#jobs-delete-account-btn').on('click', function() {
+		if(confirm('Are you absolutely sure you want to delete your account? This action cannot be undone.')) {
+			$.post(jobs_ajax.ajax_url, {
+				action: 'jobs_delete_account',
+				nonce: jobs_ajax.nonce
+			}, function(response) {
+				if(response.success) {
+					window.location.href = '<?php echo home_url(); ?>';
+				} else {
+					alert(response.data);
+				}
+			});
+		}
 	});
 });
 </script>
-
-<style>
-.jobs-section { margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-</style>
