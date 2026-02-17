@@ -4,77 +4,51 @@
  */
 
 if ( ! is_user_logged_in() ) {
-	echo '<p>You must be logged in to view your job history.</p>';
+	echo '<p>You must be logged in.</p>';
 	return;
 }
 
-$user_id = get_current_user_id();
+$user = wp_get_current_user();
+if ( ! in_array( 'employer', (array) $user->roles ) && ! in_array( 'administrator', (array) $user->roles ) ) {
+	echo '<p>Access denied.</p>';
+	return;
+}
 
 $args = array(
 	'post_type'      => 'job',
-	'post_status'    => array( 'publish', 'pending', 'draft', 'trash' ), // Include relevant statuses
-	'author'         => $user_id,
-	'posts_per_page' => -1,
-	'orderby'        => 'date',
-	'order'          => 'DESC',
+	'post_status'    => array( 'publish', 'pending', 'expired' ), // draft is in Drafts module
+	'author'         => $user->ID,
+	'posts_per_page' => 10,
 );
 
-$jobs_query = new WP_Query( $args );
-
+$query = new WP_Query( $args );
 ?>
 
 <div class="jobs-module-header">
 	<h2>Job Listings History</h2>
 </div>
 
-<?php if ( $jobs_query->have_posts() ) : ?>
+<?php if ( $query->have_posts() ) : ?>
 	<div class="jobs-history-list">
-		<?php while ( $jobs_query->have_posts() ) : $jobs_query->the_post(); ?>
-			<?php
+		<?php while ( $query->have_posts() ) : $query->the_post();
 			$status = get_post_status();
 			$status_label = ucfirst( $status );
-			$status_class = 'status-' . $status;
-			?>
-			<div class="jobs-history-item <?php echo esc_attr( $status_class ); ?>">
-				<div class="jobs-history-title">
-					<strong><?php the_title(); ?></strong>
-				</div>
-				<div class="jobs-history-meta">
-					<span class="jobs-date">Posted: <?php echo get_the_date(); ?></span>
-					<span class="jobs-status <?php echo esc_attr( $status_class ); ?>"><?php echo esc_html( $status_label ); ?></span>
+		?>
+			<div class="jobs-history-item">
+				<div class="jobs-history-info">
+					<h3 class="jobs-history-title"><?php the_title(); ?></h3>
+					<div class="jobs-history-meta">
+						<span class="jobs-status-badge jobs-status-<?php echo esc_attr( $status ); ?>"><?php echo esc_html( $status_label ); ?></span>
+						<span class="jobs-date"><?php echo get_the_date(); ?></span>
+					</div>
 				</div>
 				<div class="jobs-history-actions">
-					<a href="<?php echo get_permalink(); ?>" target="_blank" class="button">View</a>
-					<!-- Edit/Delete actions could be added here -->
+					<a href="<?php the_permalink(); ?>" target="_blank" class="button">View</a>
+					<button class="button" onclick="loadJobsModule('job-posting', {job_id: <?php the_ID(); ?>})">Edit</button>
 				</div>
 			</div>
-		<?php endwhile; ?>
+		<?php endwhile; wp_reset_postdata(); ?>
 	</div>
-	<?php wp_reset_postdata(); ?>
 <?php else : ?>
-	<p>No job listings found.</p>
+	<p>No active or pending job listings found.</p>
 <?php endif; ?>
-
-<style>
-.jobs-history-item {
-	border-bottom: 1px solid #eee;
-	padding: 15px 0;
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-}
-.jobs-history-item:last-child {
-	border-bottom: none;
-}
-.jobs-status {
-	padding: 2px 8px;
-	border-radius: 4px;
-	font-size: 12px;
-	color: #fff;
-	margin-left: 10px;
-}
-.jobs-status.status-publish { background-color: #28a745; }
-.jobs-status.status-pending { background-color: #ffc107; color: #333; }
-.jobs-status.status-draft { background-color: #6c757d; }
-.jobs-status.status-trash { background-color: #dc3545; }
-</style>

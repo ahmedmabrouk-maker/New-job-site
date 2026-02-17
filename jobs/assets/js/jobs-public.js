@@ -2,7 +2,7 @@
 	'use strict';
 
 	// Make loadJobsModule global so it can be called from inline onclick handlers
-	window.loadJobsModule = function( moduleName ) {
+	window.loadJobsModule = function( moduleName, params = {} ) {
 		$('#jobs-module-container').css('display', 'flex');
 		// Clear previous content or show loader
 		$('#jobs-module-body').html('<div style="text-align:center; padding: 40px; color: #666;">Loading ' + moduleName.replace('-', ' ') + '...</div>');
@@ -13,6 +13,7 @@
 			data: {
 				action: 'jobs_load_module',
 				module: moduleName,
+				params: params,
 				nonce: jobs_ajax.nonce
 			},
 			success: function( response ) {

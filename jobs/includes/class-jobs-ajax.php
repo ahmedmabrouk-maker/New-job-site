@@ -49,6 +49,9 @@ class Jobs_Ajax {
 
 		$file_path = JOBS_PLUGIN_DIR . 'modules/' . $module . '.php';
 
+		// Make params available to the module
+		$params = isset( $_POST['params'] ) ? $_POST['params'] : array();
+
 		if ( file_exists( $file_path ) ) {
 			ob_start();
 			include $file_path;
@@ -80,16 +83,38 @@ class Jobs_Ajax {
 			wp_send_json_error( 'Title and Description are required.' );
 		}
 
-		$post_id = wp_insert_post( array(
+		$post_data = array(
 			'post_title'   => $title,
 			'post_content' => $description,
 			'post_status'  => 'pending',
 			'post_type'    => 'job',
 			'post_author'  => get_current_user_id(),
-		) );
+		);
+
+		$is_update = false;
+		if ( isset( $_POST['job_id'] ) && ! empty( $_POST['job_id'] ) ) {
+			$job_id = intval( $_POST['job_id'] );
+			$post = get_post( $job_id );
+			if ( $post && $post->post_author == get_current_user_id() && $post->post_type == 'job' ) {
+				$post_data['ID'] = $job_id;
+				// Keep current status if it's already published? Or revert to pending on edit?
+				// Usually, editing a published job might require re-approval or keep it published.
+				// Let's reset to pending for safety unless admin.
+				if ( ! current_user_can( 'manage_options' ) ) {
+					$post_data['post_status'] = 'pending';
+				} else {
+					$post_data['post_status'] = $post->post_status;
+				}
+				$is_update = true;
+			} else {
+				wp_send_json_error( 'Invalid job or permission denied.' );
+			}
+		}
+
+		$post_id = wp_insert_post( $post_data );
 
 		if ( is_wp_error( $post_id ) ) {
-			wp_send_json_error( 'Error creating job post.' );
+			wp_send_json_error( 'Error saving job post.' );
 		}
 
 		if ( $specialization ) {
