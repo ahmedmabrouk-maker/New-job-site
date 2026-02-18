@@ -321,3 +321,81 @@ body {
 		padding: 20px;
 	}
 }
+
+/* Admin Panel Frontend Styles */
+.jobs-admin-wrap {
+	max-width: 1200px;
+	margin: 40px auto;
+	font-family: var(--jobs-font);
+}
+
+.jobs-admin-wrap h1 {
+	color: var(--jobs-primary);
+	font-weight: 700;
+	margin-bottom: 20px;
+}
+
+.jobs-admin-content {
+	background: transparent; /* Request: fully transparent */
+	padding: 20px 0;
+}
+
+.jobs-admin-content table.widefat {
+	background: transparent; /* Override WP default */
+	border: none;
+	box-shadow: none;
+}
+
+.jobs-admin-content table.widefat th {
+	background: rgba(29, 52, 105, 0.1); /* Slight tint for header */
+	color: var(--jobs-primary);
+	font-weight: 500;
+}
+
+.jobs-admin-content table.widefat td,
+.jobs-admin-content table.widefat th {
+	border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Admin Tabs */
+.nav-tab-wrapper {
+	border-bottom: 2px solid #eee;
+	margin-bottom: 20px;
+}
+
+a.nav-tab {
+	background: transparent;
+	border: none;
+	border-bottom: 3px solid transparent;
+	color: #666;
+	font-size: 16px;
+	margin-right: 20px;
+	padding: 10px 5px;
+	text-decoration: none;
+	transition: all 0.2s;
+}
+
+a.nav-tab:hover,
+a.nav-tab-active {
+	background: transparent;
+	color: var(--jobs-primary);
+	border-bottom-color: var(--jobs-primary);
+}
+
+.jobs-admin-card {
+	display: flex;
+	gap: 20px;
+	flex-wrap: wrap;
+}
+
+.jobs-admin-card p {
+	background: rgba(255,255,255,0.8);
+	padding: 20px;
+	border-radius: 8px;
+	flex: 1;
+	min-width: 150px;
+	text-align: center;
+	border: 1px solid #eee;
+}
+
+/* Ensure WP admin bar is hidden or handled (Access Control class handles hiding) */

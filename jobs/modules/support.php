@@ -7,21 +7,22 @@ if ( ! is_user_logged_in() ) {
 	echo '<p>You must be logged in to contact support.</p>';
 	return;
 }
-?>
 
+?>
 <div class="jobs-module-header">
 	<h2>Support</h2>
 </div>
 
 <form id="jobs-support-form" class="jobs-form">
+
 	<div class="jobs-form-group">
-		<label for="support_subject">Subject</label>
-		<input type="text" name="support_subject" id="support_subject" required>
+		<label for="subject">Subject</label>
+		<input type="text" name="subject" id="subject" required>
 	</div>
 
 	<div class="jobs-form-group">
-		<label for="support_message">Message</label>
-		<textarea name="support_message" id="support_message" rows="5" required></textarea>
+		<label for="message">Message</label>
+		<textarea name="message" id="message" rows="5" required></textarea>
 	</div>
 
 	<button type="submit" class="jobs-submit-btn">Send Message</button>
@@ -32,12 +33,11 @@ if ( ! is_user_logged_in() ) {
 jQuery(document).ready(function($) {
 	$('#jobs-support-form').on('submit', function(e) {
 		e.preventDefault();
-
 		var formData = {
 			action: 'jobs_send_support_message',
 			nonce: jobs_ajax.nonce,
-			subject: $('#support_subject').val(),
-			message: $('#support_message').val()
+			subject: $('#subject').val(),
+			message: $('#message').val()
 		};
 
 		$('#jobs-support-message').text('Sending...').css('color', '#333');

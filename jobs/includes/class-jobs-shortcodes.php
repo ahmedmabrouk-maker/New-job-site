@@ -8,6 +8,92 @@ class Jobs_Shortcodes {
 		add_shortcode( 'jobs_register', array( $this, 'render_register' ) );
 
 		add_action( 'init', array( $this, 'handle_registration' ) );
+		add_action( 'init', array( $this, 'handle_pdf_resume' ) );
+	}
+
+	public function handle_pdf_resume() {
+		if ( isset( $_GET['jobs_pdf_resume'] ) && $_GET['jobs_pdf_resume'] == '1' ) {
+			if ( ! is_user_logged_in() ) {
+				wp_die( 'You must be logged in to view your resume.' );
+			}
+
+			$user = wp_get_current_user();
+			$cv_data = get_user_meta( $user->ID, '_jobs_cv_data', true );
+
+			if ( empty( $cv_data ) ) {
+				wp_die( 'No resume data found.' );
+			}
+
+			// Render printable HTML
+			?>
+			<!DOCTYPE html>
+			<html lang="en">
+			<head>
+				<meta charset="UTF-8">
+				<title><?php echo esc_html( $user->display_name ); ?> - Resume</title>
+				<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700&display=swap" rel="stylesheet">
+				<style>
+					body { font-family: 'Rubik', sans-serif; color: #333; line-height: 1.6; max-width: 800px; margin: 40px auto; padding: 20px; }
+					h1 { color: #1d3469; border-bottom: 2px solid #1d3469; padding-bottom: 10px; }
+					h2 { color: #1d3469; margin-top: 30px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+					.section { margin-bottom: 20px; }
+					.item { margin-bottom: 15px; }
+					.item-title { font-weight: bold; font-size: 1.1em; }
+					.item-meta { color: #666; font-style: italic; }
+					@media print {
+						.no-print { display: none; }
+						body { margin: 0; padding: 20px; }
+					}
+				</style>
+			</head>
+			<body>
+				<div class="no-print" style="text-align: right; margin-bottom: 20px;">
+					<button onclick="window.print()" style="padding: 10px 20px; background: #1d3469; color: white; border: none; cursor: pointer;">Print / Save as PDF</button>
+				</div>
+
+				<h1><?php echo esc_html( $user->display_name ); ?></h1>
+				<p><?php echo esc_html( $user->user_email ); ?></p>
+
+				<?php if ( ! empty( $cv_data['skills'] ) ) : ?>
+					<div class="section">
+						<h2>Skills</h2>
+						<p><?php echo nl2br( esc_html( $cv_data['skills'] ) ); ?></p>
+					</div>
+				<?php endif; ?>
+
+				<?php if ( ! empty( $cv_data['education'] ) ) : ?>
+					<div class="section">
+						<h2>Education</h2>
+						<?php foreach ( $cv_data['education'] as $edu ) : ?>
+							<div class="item">
+								<div class="item-title"><?php echo esc_html( $edu['institution'] ); ?></div>
+								<div class="item-meta"><?php echo esc_html( $edu['degree'] ); ?> (<?php echo esc_html( $edu['year'] ); ?>)</div>
+							</div>
+						<?php endforeach; ?>
+					</div>
+				<?php endif; ?>
+
+				<?php if ( ! empty( $cv_data['experience'] ) ) : ?>
+					<div class="section">
+						<h2>Experience</h2>
+						<?php foreach ( $cv_data['experience'] as $exp ) : ?>
+							<div class="item">
+								<div class="item-title"><?php echo esc_html( $exp['company'] ); ?></div>
+								<div class="item-meta"><?php echo esc_html( $exp['position'] ); ?> (<?php echo esc_html( $exp['duration'] ); ?>)</div>
+							</div>
+						<?php endforeach; ?>
+					</div>
+				<?php endif; ?>
+
+				<script>
+					// Optional: Auto print
+					// window.print();
+				</script>
+			</body>
+			</html>
+			<?php
+			exit;
+		}
 	}
 
 	public function handle_registration() {
