@@ -2,19 +2,25 @@
 	'use strict';
 
 	// Make loadJobsModule global so it can be called from inline onclick handlers
-	window.loadJobsModule = function( moduleName ) {
+	window.loadJobsModule = function( moduleName, extraData ) {
 		$('#jobs-module-container').css('display', 'flex');
 		// Clear previous content or show loader
 		$('#jobs-module-body').html('<div style="text-align:center; padding: 40px; color: #666;">Loading ' + moduleName.replace('-', ' ') + '...</div>');
 
+		var data = {
+			action: 'jobs_load_module',
+			module: moduleName,
+			nonce: jobs_ajax.nonce
+		};
+
+		if (extraData) {
+			$.extend(data, extraData);
+		}
+
 		$.ajax({
 			url: jobs_ajax.ajax_url,
 			type: 'POST',
-			data: {
-				action: 'jobs_load_module',
-				module: moduleName,
-				nonce: jobs_ajax.nonce
-			},
+			data: data,
 			success: function( response ) {
 				if ( response.success ) {
 					$('#jobs-module-body').html( response.data );
