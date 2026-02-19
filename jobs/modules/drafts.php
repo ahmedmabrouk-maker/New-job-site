@@ -66,8 +66,7 @@ $drafts_query = new WP_Query( $args );
 
 <script>
 function editDraft(jobId) {
-	// Ideally this would load the job-posting module populated with data
-	alert('Edit functionality for draft ID ' + jobId + ' to be implemented.');
+	loadJobsModule('job-posting', { job_id: jobId });
 }
 function deleteDraft(jobId) {
 	if (confirm('Delete this draft?')) {

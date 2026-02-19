@@ -80,16 +80,43 @@ class Jobs_Ajax {
 			wp_send_json_error( 'Title and Description are required.' );
 		}
 
-		$post_id = wp_insert_post( array(
+		$job_id = isset( $_POST['job_id'] ) ? intval( $_POST['job_id'] ) : 0;
+		$post_data = array(
 			'post_title'   => $title,
 			'post_content' => $description,
 			'post_status'  => 'pending',
 			'post_type'    => 'job',
 			'post_author'  => get_current_user_id(),
-		) );
+		);
+
+		if ( $job_id ) {
+			$post = get_post( $job_id );
+			if ( $post && ( $post->post_author == get_current_user_id() || current_user_can( 'administrator' ) ) ) {
+				$post_data['ID'] = $job_id;
+				// If admin is editing, keep current status. If employer, reset to pending (unless it was draft).
+				if ( current_user_can( 'administrator' ) ) {
+					$post_data['post_status'] = $post->post_status;
+				} else {
+					// If it was published, maybe require re-approval? For now, let's keep it simple.
+					// If it was draft, keep draft? Or submit?
+					// "Allows posting jobs...". If submit button is clicked, it implies submission.
+					// But if editing a draft, user might want to keep it as draft?
+					// The form button says "Submit Job".
+					// Let's assume submitting means "pending" for review.
+					$post_data['post_status'] = 'pending';
+				}
+				$post_id = wp_update_post( $post_data );
+				$message = 'Job updated successfully.';
+			} else {
+				wp_send_json_error( 'Permission denied or invalid job.' );
+			}
+		} else {
+			$post_id = wp_insert_post( $post_data );
+			$message = 'Job posted successfully! Waiting for approval.';
+		}
 
 		if ( is_wp_error( $post_id ) ) {
-			wp_send_json_error( 'Error creating job post.' );
+			wp_send_json_error( 'Error saving job post.' );
 		}
 
 		if ( $specialization ) {
@@ -106,7 +133,7 @@ class Jobs_Ajax {
 		update_post_meta( $post_id, '_job_latitude', '' );
 		update_post_meta( $post_id, '_job_longitude', '' );
 
-		wp_send_json_success( 'Job posted successfully! Waiting for approval.' );
+		wp_send_json_success( $message );
 	}
 
 	public function save_cv_data() {
