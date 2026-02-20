@@ -139,10 +139,30 @@ class Jobs_Ajax {
 		// Sanitize skills
 		$skills = isset( $_POST['skills'] ) ? sanitize_text_field( $_POST['skills'] ) : '';
 
+		// Sanitize courses
+		$courses = isset( $_POST['courses'] ) ? $_POST['courses'] : array();
+		$clean_courses = array();
+		if ( is_array( $courses ) ) {
+			foreach ( $courses as $course ) {
+				$clean_courses[] = array_map( 'sanitize_text_field', $course );
+			}
+		}
+
+		// Sanitize certifications
+		$certifications = isset( $_POST['certifications'] ) ? $_POST['certifications'] : array();
+		$clean_certifications = array();
+		if ( is_array( $certifications ) ) {
+			foreach ( $certifications as $cert ) {
+				$clean_certifications[] = array_map( 'sanitize_text_field', $cert );
+			}
+		}
+
 		$cv_data = array(
 			'education'  => $clean_education,
 			'experience' => $clean_experience,
 			'skills'     => $skills,
+			'courses'    => $clean_courses,
+			'certifications' => $clean_certifications,
 		);
 
 		update_user_meta( $user_id, '_jobs_cv_data', $cv_data );
