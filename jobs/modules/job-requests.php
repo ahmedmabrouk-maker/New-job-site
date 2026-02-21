@@ -101,6 +101,46 @@ if ( in_array( 'employer', $roles ) || in_array( 'administrator', $roles ) ) { /
 			echo '<p>You have no job listings.</p>';
 		}
 	}
+
+	echo '<hr>';
+}
+
+// JOB SEEKER VIEW: My Applications Status
+if ( in_array( 'job_seeker', $roles ) ) {
+	echo '<div class="jobs-module-header"><h2>My Job Applications</h2></div>';
+
+	$my_applications = new WP_Query( array(
+		'post_type'      => 'job_application',
+		'author'         => $user->ID,
+		'posts_per_page' => -1,
+		'orderby'        => 'date',
+		'order'          => 'DESC',
+	) );
+
+	if ( $my_applications->have_posts() ) {
+		echo '<div class="jobs-requests-list">';
+		while ( $my_applications->have_posts() ) {
+			$my_applications->the_post();
+			$job_id = $post->post_parent;
+			$job = get_post( $job_id );
+			$status = get_post_meta( get_the_ID(), '_application_status', true ); // Placeholder meta
+			if ( ! $status ) $status = 'Received';
+
+			echo '<div class="jobs-request-item">';
+			echo '<div class="jobs-request-info">';
+			echo 'Applied to <strong>' . ( $job ? esc_html( $job->post_title ) : 'Deleted Job' ) . '</strong>';
+			echo '<br><span class="jobs-date">' . get_the_date() . '</span>';
+			echo '</div>';
+			echo '<div class="jobs-request-status">';
+			echo '<span class="jobs-status-capsule">' . esc_html( ucfirst( $status ) ) . '</span>';
+			echo '</div>';
+			echo '</div>';
+		}
+		echo '</div>';
+		wp_reset_postdata();
+	} else {
+		echo '<p>You haven\'t applied to any jobs yet.</p>';
+	}
 }
 
 ?>
@@ -109,6 +149,7 @@ if ( in_array( 'employer', $roles ) || in_array( 'administrator', $roles ) ) { /
 .jobs-request-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #eee; }
 .jobs-request-item:last-child { border-bottom: none; }
 .jobs-request-actions { display: flex; gap: 5px; }
+.jobs-status-capsule { background: #e0f7fa; color: #006064; padding: 5px 10px; border-radius: 20px; font-size: 12px; }
 </style>
 
 <script>

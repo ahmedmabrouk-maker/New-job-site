@@ -16,18 +16,29 @@ if ( ! is_array( $cv_data ) ) {
 
 $education = isset( $cv_data['education'] ) ? $cv_data['education'] : array();
 $experience = isset( $cv_data['experience'] ) ? $cv_data['experience'] : array();
+$courses = isset( $cv_data['courses'] ) ? $cv_data['courses'] : array();
+$certifications = isset( $cv_data['certifications'] ) ? $cv_data['certifications'] : array();
 $skills = isset( $cv_data['skills'] ) ? $cv_data['skills'] : '';
+
+$visibility = isset( $cv_data['visibility'] ) ? $cv_data['visibility'] : array(
+	'education' => 1, 'experience' => 1, 'courses' => 1, 'certifications' => 1, 'skills' => 1
+);
 ?>
 
 <div class="jobs-module-header">
 	<h2>CV / Resume</h2>
+	<a href="<?php echo esc_url( add_query_arg( 'jobs_pdf_resume', '1', home_url() ) ); ?>" target="_blank" class="button button-primary">Download PDF</a>
 </div>
 
 <form id="jobs-cv-form" class="jobs-form">
 
 	<!-- Education Section -->
 	<div class="jobs-section">
-		<h3>Education <button type="button" class="button button-small" onclick="addEducationField()">+ Add</button></h3>
+		<div class="jobs-section-header">
+			<h3>Education</h3>
+			<label><input type="checkbox" name="visibility[education]" value="1" <?php checked( isset($visibility['education']) && $visibility['education'] ); ?>> Show in Profile</label>
+			<button type="button" class="button button-small" onclick="addEducationField()">+ Add</button>
+		</div>
 		<div id="jobs-education-fields">
 			<?php if ( ! empty( $education ) ) : ?>
 				<?php foreach ( $education as $index => $edu ) : ?>
@@ -44,7 +55,11 @@ $skills = isset( $cv_data['skills'] ) ? $cv_data['skills'] : '';
 
 	<!-- Experience Section -->
 	<div class="jobs-section">
-		<h3>Experience <button type="button" class="button button-small" onclick="addExperienceField()">+ Add</button></h3>
+		<div class="jobs-section-header">
+			<h3>Experience</h3>
+			<label><input type="checkbox" name="visibility[experience]" value="1" <?php checked( isset($visibility['experience']) && $visibility['experience'] ); ?>> Show in Profile</label>
+			<button type="button" class="button button-small" onclick="addExperienceField()">+ Add</button>
+		</div>
 		<div id="jobs-experience-fields">
 			<?php if ( ! empty( $experience ) ) : ?>
 				<?php foreach ( $experience as $index => $exp ) : ?>
@@ -59,9 +74,52 @@ $skills = isset( $cv_data['skills'] ) ? $cv_data['skills'] : '';
 		</div>
 	</div>
 
+	<!-- Courses Section -->
+	<div class="jobs-section">
+		<div class="jobs-section-header">
+			<h3>Courses</h3>
+			<label><input type="checkbox" name="visibility[courses]" value="1" <?php checked( isset($visibility['courses']) && $visibility['courses'] ); ?>> Show in Profile</label>
+			<button type="button" class="button button-small" onclick="addCourseField()">+ Add</button>
+		</div>
+		<div id="jobs-courses-fields">
+			<?php if ( ! empty( $courses ) ) : ?>
+				<?php foreach ( $courses as $index => $course ) : ?>
+					<div class="jobs-repeater-item">
+						<input type="text" name="courses[<?php echo $index; ?>][name]" placeholder="Course Name" value="<?php echo esc_attr( $course['name'] ); ?>">
+						<input type="text" name="courses[<?php echo $index; ?>][year]" placeholder="Year" value="<?php echo esc_attr( $course['year'] ); ?>">
+						<button type="button" class="button button-small remove-row" onclick="this.parentElement.remove()">Remove</button>
+					</div>
+				<?php endforeach; ?>
+			<?php endif; ?>
+		</div>
+	</div>
+
+	<!-- Certifications Section -->
+	<div class="jobs-section">
+		<div class="jobs-section-header">
+			<h3>Certifications</h3>
+			<label><input type="checkbox" name="visibility[certifications]" value="1" <?php checked( isset($visibility['certifications']) && $visibility['certifications'] ); ?>> Show in Profile</label>
+			<button type="button" class="button button-small" onclick="addCertificationField()">+ Add</button>
+		</div>
+		<div id="jobs-certifications-fields">
+			<?php if ( ! empty( $certifications ) ) : ?>
+				<?php foreach ( $certifications as $index => $cert ) : ?>
+					<div class="jobs-repeater-item">
+						<input type="text" name="certifications[<?php echo $index; ?>][name]" placeholder="Certification Name" value="<?php echo esc_attr( $cert['name'] ); ?>">
+						<input type="text" name="certifications[<?php echo $index; ?>][year]" placeholder="Year" value="<?php echo esc_attr( $cert['year'] ); ?>">
+						<button type="button" class="button button-small remove-row" onclick="this.parentElement.remove()">Remove</button>
+					</div>
+				<?php endforeach; ?>
+			<?php endif; ?>
+		</div>
+	</div>
+
 	<!-- Skills Section -->
 	<div class="jobs-section">
-		<h3>Skills</h3>
+		<div class="jobs-section-header">
+			<h3>Skills</h3>
+			<label><input type="checkbox" name="visibility[skills]" value="1" <?php checked( isset($visibility['skills']) && $visibility['skills'] ); ?>> Show in Profile</label>
+		</div>
 		<textarea name="skills" placeholder="List your skills, separated by commas..."><?php echo esc_textarea( $skills ); ?></textarea>
 	</div>
 
@@ -72,6 +130,8 @@ $skills = isset( $cv_data['skills'] ) ? $cv_data['skills'] : '';
 <script>
 var eduCount = <?php echo count( $education ); ?>;
 var expCount = <?php echo count( $experience ); ?>;
+var courseCount = <?php echo count( $courses ); ?>;
+var certCount = <?php echo count( $certifications ); ?>;
 
 function addEducationField() {
 	var html = '<div class="jobs-repeater-item">' +
@@ -95,6 +155,26 @@ function addExperienceField() {
 	expCount++;
 }
 
+function addCourseField() {
+	var html = '<div class="jobs-repeater-item">' +
+		'<input type="text" name="courses[' + courseCount + '][name]" placeholder="Course Name">' +
+		'<input type="text" name="courses[' + courseCount + '][year]" placeholder="Year">' +
+		'<button type="button" class="button button-small remove-row" onclick="this.parentElement.remove()">Remove</button>' +
+		'</div>';
+	jQuery('#jobs-courses-fields').append(html);
+	courseCount++;
+}
+
+function addCertificationField() {
+	var html = '<div class="jobs-repeater-item">' +
+		'<input type="text" name="certifications[' + certCount + '][name]" placeholder="Certification Name">' +
+		'<input type="text" name="certifications[' + certCount + '][year]" placeholder="Year">' +
+		'<button type="button" class="button button-small remove-row" onclick="this.parentElement.remove()">Remove</button>' +
+		'</div>';
+	jQuery('#jobs-certifications-fields').append(html);
+	certCount++;
+}
+
 jQuery(document).ready(function($) {
 	$('#jobs-cv-form').on('submit', function(e) {
 		e.preventDefault();
@@ -116,6 +196,8 @@ jQuery(document).ready(function($) {
 
 <style>
 .jobs-section { margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+.jobs-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.jobs-section-header h3 { margin: 0; }
 .jobs-repeater-item { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
 .jobs-repeater-item input { flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
 </style>
