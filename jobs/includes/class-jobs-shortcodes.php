@@ -6,8 +6,126 @@ class Jobs_Shortcodes {
 		add_shortcode( 'jobs_search', array( $this, 'render_search' ) );
 		add_shortcode( 'jobs_login', array( $this, 'render_login' ) );
 		add_shortcode( 'jobs_register', array( $this, 'render_register' ) );
+		add_shortcode( 'jobs_admin_panel', array( $this, 'render_admin_panel' ) );
 
 		add_action( 'init', array( $this, 'handle_registration' ) );
+		add_action( 'init', array( $this, 'handle_pdf_resume' ) );
+	}
+
+	public function render_admin_panel( $atts ) {
+		if ( ! class_exists( 'Jobs_Admin' ) ) {
+			return 'Jobs Admin class not found.';
+		}
+		ob_start();
+		Jobs_Admin::render_frontend_panel();
+		return ob_get_clean();
+	}
+
+	public function handle_pdf_resume() {
+		if ( isset( $_GET['jobs_pdf_resume'] ) && $_GET['jobs_pdf_resume'] == '1' ) {
+			if ( ! is_user_logged_in() ) {
+				wp_die( 'You must be logged in to view your resume.' );
+			}
+
+			$user = wp_get_current_user();
+			$user_id = $user->ID;
+			$cv_data = get_user_meta( $user_id, '_jobs_cv_data', true );
+
+			if ( ! is_array( $cv_data ) ) {
+				$cv_data = array();
+			}
+
+			$education = isset( $cv_data['education'] ) ? $cv_data['education'] : array();
+			$experience = isset( $cv_data['experience'] ) ? $cv_data['experience'] : array();
+			$skills = isset( $cv_data['skills'] ) ? $cv_data['skills'] : '';
+			$courses = isset( $cv_data['courses'] ) ? $cv_data['courses'] : array();
+			$certifications = isset( $cv_data['certifications'] ) ? $cv_data['certifications'] : array();
+
+			// Generate HTML for PDF
+			?>
+			<!DOCTYPE html>
+			<html lang="en">
+			<head>
+				<meta charset="UTF-8">
+				<title>Resume - <?php echo esc_html( $user->display_name ); ?></title>
+				<style>
+					body { font-family: 'Rubik', sans-serif; color: #333; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+					h1 { color: #1d3469; border-bottom: 2px solid #1d3469; padding-bottom: 10px; }
+					h2 { color: #1d3469; margin-top: 30px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+					.section { margin-bottom: 20px; }
+					.item { margin-bottom: 15px; }
+					.item-title { font-weight: bold; font-size: 1.1em; }
+					.item-meta { color: #666; font-size: 0.9em; }
+					.skills-list { white-space: pre-wrap; }
+					@media print {
+						body { -webkit-print-color-adjust: exact; }
+					}
+				</style>
+				<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700&display=swap" rel="stylesheet">
+			</head>
+			<body onload="window.print()">
+				<h1><?php echo esc_html( $user->display_name ); ?></h1>
+				<p><?php echo esc_html( $user->user_email ); ?></p>
+
+				<?php if ( ! empty( $education ) ) : ?>
+				<div class="section">
+					<h2>Education</h2>
+					<?php foreach ( $education as $edu ) : ?>
+						<div class="item">
+							<div class="item-title"><?php echo esc_html( $edu['school'] ); ?> - <?php echo esc_html( $edu['degree'] ); ?></div>
+							<div class="item-meta"><?php echo esc_html( $edu['year'] ); ?></div>
+						</div>
+					<?php endforeach; ?>
+				</div>
+				<?php endif; ?>
+
+				<?php if ( ! empty( $experience ) ) : ?>
+				<div class="section">
+					<h2>Experience</h2>
+					<?php foreach ( $experience as $exp ) : ?>
+						<div class="item">
+							<div class="item-title"><?php echo esc_html( $exp['position'] ); ?> at <?php echo esc_html( $exp['company'] ); ?></div>
+							<div class="item-meta"><?php echo esc_html( $exp['years'] ); ?></div>
+						</div>
+					<?php endforeach; ?>
+				</div>
+				<?php endif; ?>
+
+				<?php if ( ! empty( $courses ) ) : ?>
+				<div class="section">
+					<h2>Courses</h2>
+					<?php foreach ( $courses as $course ) : ?>
+						<div class="item">
+							<div class="item-title"><?php echo esc_html( $course['name'] ); ?></div>
+							<div class="item-meta"><?php echo esc_html( $course['year'] ); ?></div>
+						</div>
+					<?php endforeach; ?>
+				</div>
+				<?php endif; ?>
+
+				<?php if ( ! empty( $certifications ) ) : ?>
+				<div class="section">
+					<h2>Certifications</h2>
+					<?php foreach ( $certifications as $cert ) : ?>
+						<div class="item">
+							<div class="item-title"><?php echo esc_html( $cert['name'] ); ?></div>
+							<div class="item-meta"><?php echo esc_html( $cert['year'] ); ?></div>
+						</div>
+					<?php endforeach; ?>
+				</div>
+				<?php endif; ?>
+
+				<?php if ( ! empty( $skills ) ) : ?>
+				<div class="section">
+					<h2>Skills</h2>
+					<div class="skills-list"><?php echo esc_html( $skills ); ?></div>
+				</div>
+				<?php endif; ?>
+			</body>
+			</html>
+			<?php
+			exit;
+		}
 	}
 
 	public function handle_registration() {
@@ -64,7 +182,11 @@ class Jobs_Shortcodes {
 			<form role="search" method="get" class="jobs-search-form" action="<?php echo esc_url( home_url( '/' ) ); ?>">
 				<input type="hidden" name="post_type" value="job" />
 				<div class="jobs-search-fields">
-					<input type="text" name="s" placeholder="Search jobs..." class="jobs-input-main" />
+					<?php
+					$search_settings = get_option( 'jobs_search_settings', array() );
+					$placeholder = isset( $search_settings['placeholder'] ) ? $search_settings['placeholder'] : 'Search jobs...';
+					?>
+					<input type="text" name="s" placeholder="<?php echo esc_attr( $placeholder ); ?>" class="jobs-input-main" />
 					<select name="job_specialization" class="jobs-select">
 						<option value="">Specialization</option>
 						<?php

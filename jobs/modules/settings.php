@@ -32,6 +32,12 @@ $public_profile_hidden = get_user_meta( $user->ID, '_jobs_hide_public_profile', 
 
 	<form id="jobs-account-form" class="jobs-form">
 		<div class="jobs-form-group">
+			<label for="new_username">New Username</label>
+			<input type="text" name="new_username" id="new_username" value="<?php echo esc_attr( $user->user_login ); ?>">
+			<p class="description" style="font-size: 12px; color: #999;">Changing username is restricted.</p>
+		</div>
+
+		<div class="jobs-form-group">
 			<label for="new_email">New Email</label>
 			<input type="email" name="new_email" id="new_email" value="<?php echo esc_attr( $user->user_email ); ?>">
 		</div>
@@ -44,6 +50,36 @@ $public_profile_hidden = get_user_meta( $user->ID, '_jobs_hide_public_profile', 
 		<button type="submit" class="jobs-submit-btn">Update Details</button>
 		<div id="jobs-account-message"></div>
 	</form>
+</div>
+
+<!-- Personal Activity Log -->
+<div class="jobs-section">
+	<h3>Personal Activity Log</h3>
+	<div class="jobs-activity-log-list">
+		<?php
+		// Fetch logs for current user
+		$logs = get_posts( array(
+			'post_type'      => 'job_activity',
+			'author'         => $user->ID,
+			'posts_per_page' => 10,
+			'orderby'        => 'date',
+			'order'          => 'DESC',
+		) );
+
+		if ( $logs ) {
+			echo '<ul class="jobs-log-list">';
+			foreach ( $logs as $log ) {
+				echo '<li>';
+				echo '<span class="jobs-log-date">' . get_the_date( '', $log ) . '</span>: ';
+				echo esc_html( $log->post_title );
+				echo '</li>';
+			}
+			echo '</ul>';
+		} else {
+			echo '<p>No activity recorded yet.</p>';
+		}
+		?>
+	</div>
 </div>
 
 <!-- Danger Zone -->
@@ -85,6 +121,7 @@ jQuery(document).ready(function($) {
 		var formData = {
 			action: 'jobs_update_account_settings',
 			nonce: jobs_ajax.nonce,
+			username: $('#new_username').val(),
 			email: $('#new_email').val(),
 			password: $('#new_password').val()
 		};
@@ -104,4 +141,7 @@ jQuery(document).ready(function($) {
 
 <style>
 .jobs-section { margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+.jobs-log-list { list-style: none; padding: 0; }
+.jobs-log-list li { padding: 5px 0; border-bottom: 1px solid #f9f9f9; }
+.jobs-log-date { color: #888; font-size: 0.9em; }
 </style>
