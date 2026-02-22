@@ -106,6 +106,8 @@ class Jobs_Ajax {
 		update_post_meta( $post_id, '_job_latitude', '' );
 		update_post_meta( $post_id, '_job_longitude', '' );
 
+		$this->log_activity( get_current_user_id(), 'job_post', 'Posted job: ' . $title );
+
 		wp_send_json_success( 'Job posted successfully! Waiting for approval.' );
 	}
 
@@ -139,10 +141,30 @@ class Jobs_Ajax {
 		// Sanitize skills
 		$skills = isset( $_POST['skills'] ) ? sanitize_text_field( $_POST['skills'] ) : '';
 
+		// Sanitize courses
+		$courses = isset( $_POST['courses'] ) ? $_POST['courses'] : array();
+		$clean_courses = array();
+		if ( is_array( $courses ) ) {
+			foreach ( $courses as $course ) {
+				$clean_courses[] = array_map( 'sanitize_text_field', $course );
+			}
+		}
+
+		// Sanitize certifications
+		$certifications = isset( $_POST['certifications'] ) ? $_POST['certifications'] : array();
+		$clean_certifications = array();
+		if ( is_array( $certifications ) ) {
+			foreach ( $certifications as $cert ) {
+				$clean_certifications[] = array_map( 'sanitize_text_field', $cert );
+			}
+		}
+
 		$cv_data = array(
-			'education'  => $clean_education,
-			'experience' => $clean_experience,
-			'skills'     => $skills,
+			'education'      => $clean_education,
+			'experience'     => $clean_experience,
+			'skills'         => $skills,
+			'courses'        => $clean_courses,
+			'certifications' => $clean_certifications,
 		);
 
 		update_user_meta( $user_id, '_jobs_cv_data', $cv_data );
@@ -216,6 +238,8 @@ class Jobs_Ajax {
 			'post_status' => 'publish',
 		) );
 
+		$this->log_activity( get_current_user_id(), 'job_approve', 'Approved job ID: ' . $job_id );
+
 		wp_send_json_success( 'Job approved successfully.' );
 	}
 
@@ -237,6 +261,8 @@ class Jobs_Ajax {
 			'ID'          => $job_id,
 			'post_status' => 'trash',
 		) );
+
+		$this->log_activity( get_current_user_id(), 'job_reject', 'Rejected job ID: ' . $job_id );
 
 		wp_send_json_success( 'Job rejected.' );
 	}
@@ -288,6 +314,8 @@ class Jobs_Ajax {
 		}
 
 		wp_delete_post( $job_id, true ); // Force delete
+
+		$this->log_activity( get_current_user_id(), 'job_delete', 'Deleted draft job ID: ' . $job_id );
 
 		wp_send_json_success( 'Draft deleted.' );
 	}
@@ -348,8 +376,42 @@ class Jobs_Ajax {
 		}
 
 		$user = wp_get_current_user();
+
+		// Check "Once per month" limit for non-admins
+		if ( ! in_array( 'administrator', (array) $user->roles ) ) {
+			$last_update = get_user_meta( $user->ID, '_jobs_last_account_update', true );
+			if ( $last_update ) {
+				$days_diff = ( time() - $last_update ) / ( 60 * 60 * 24 );
+				if ( $days_diff < 30 ) {
+					wp_send_json_error( 'You can only update your account details once every 30 days.' );
+				}
+			}
+		}
+
+		$new_username = sanitize_user( $_POST['username'] );
 		$new_email = sanitize_email( $_POST['email'] );
 		$new_password = $_POST['password'];
+
+		$changes_made = false;
+		global $wpdb;
+
+		// Handle Username Change
+		if ( ! empty( $new_username ) && $new_username !== $user->user_login ) {
+			if ( username_exists( $new_username ) ) {
+				wp_send_json_error( 'Username already taken.' );
+			}
+			// WordPress does not allow username change via wp_update_user, so we do it via DB
+			$wpdb->update(
+				$wpdb->users,
+				array( 'user_login' => $new_username, 'user_nicename' => sanitize_title( $new_username ) ),
+				array( 'ID' => $user->ID )
+			);
+			$changes_made = true;
+			clean_user_cache( $user->ID );
+			wp_clear_auth_cookie();
+			wp_set_auth_cookie( $user->ID );
+			wp_set_current_user( $user->ID );
+		}
 
 		$user_data = array( 'ID' => $user->ID );
 
@@ -358,17 +420,24 @@ class Jobs_Ajax {
 				wp_send_json_error( 'Email already in use.' );
 			}
 			$user_data['user_email'] = $new_email;
+			$changes_made = true;
 		}
 
 		if ( ! empty( $new_password ) ) {
 			$user_data['user_pass'] = $new_password;
+			$changes_made = true;
 		}
 
-		if ( count( $user_data ) > 1 ) {
+		if ( count( $user_data ) > 1 ) { // ID is always present
 			$user_id = wp_update_user( $user_data );
 			if ( is_wp_error( $user_id ) ) {
 				wp_send_json_error( $user_id->get_error_message() );
 			}
+		}
+
+		if ( $changes_made ) {
+			update_user_meta( $user->ID, '_jobs_last_account_update', time() );
+			$this->log_activity( $user->ID, 'account_update', 'Updated account details.' );
 			wp_send_json_success( 'Account details updated.' );
 		} else {
 			wp_send_json_success( 'No changes made.' );
@@ -395,5 +464,17 @@ class Jobs_Ajax {
 		} else {
 			wp_send_json_error( 'Error deleting account.' );
 		}
+	}
+
+	private function log_activity( $user_id, $action, $details ) {
+		// Log activity to a custom post type 'job_activity'
+		// This keeps logs persistent and queryable
+		$log_id = wp_insert_post( array(
+			'post_title'   => $details,
+			'post_content' => $action, // Use content for action type or details
+			'post_status'  => 'publish',
+			'post_type'    => 'job_activity',
+			'post_author'  => $user_id,
+		) );
 	}
 }

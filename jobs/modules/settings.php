@@ -32,6 +32,11 @@ $public_profile_hidden = get_user_meta( $user->ID, '_jobs_hide_public_profile', 
 
 	<form id="jobs-account-form" class="jobs-form">
 		<div class="jobs-form-group">
+			<label for="new_username">New Username</label>
+			<input type="text" name="new_username" id="new_username" value="<?php echo esc_attr( $user->user_login ); ?>">
+		</div>
+
+		<div class="jobs-form-group">
 			<label for="new_email">New Email</label>
 			<input type="email" name="new_email" id="new_email" value="<?php echo esc_attr( $user->user_email ); ?>">
 		</div>
@@ -44,6 +49,38 @@ $public_profile_hidden = get_user_meta( $user->ID, '_jobs_hide_public_profile', 
 		<button type="submit" class="jobs-submit-btn">Update Details</button>
 		<div id="jobs-account-message"></div>
 	</form>
+</div>
+
+<!-- Personal Activity Log -->
+<div class="jobs-section">
+	<h3>Personal Activity Log</h3>
+	<div class="jobs-activity-log">
+		<?php
+		// Fetch activity logs for the current user
+		// Assuming we store logs in a custom table or CPT, for now using a placeholder or basic query if CPT exists
+		// Actually, I will query 'job_activity' CPT authored by this user
+		$logs = get_posts( array(
+			'post_type'      => 'job_activity',
+			'author'         => $user->ID,
+			'posts_per_page' => 10,
+			'orderby'        => 'date',
+			'order'          => 'DESC',
+		) );
+
+		if ( ! empty( $logs ) ) {
+			echo '<ul class="jobs-log-list">';
+			foreach ( $logs as $log ) {
+				echo '<li>';
+				echo '<strong>' . get_the_date( '', $log ) . '</strong>: ';
+				echo esc_html( $log->post_title );
+				echo '</li>';
+			}
+			echo '</ul>';
+		} else {
+			echo '<p>No recent activity.</p>';
+		}
+		?>
+	</div>
 </div>
 
 <!-- Danger Zone -->
@@ -85,6 +122,7 @@ jQuery(document).ready(function($) {
 		var formData = {
 			action: 'jobs_update_account_settings',
 			nonce: jobs_ajax.nonce,
+			username: $('#new_username').val(),
 			email: $('#new_email').val(),
 			password: $('#new_password').val()
 		};
