@@ -109,6 +109,30 @@ class Jobs_CPT {
 			'capability_type'       => 'post',
 		);
 		register_post_type( 'job_notification', $args_notif );
+
+		// Activity Log Post Type
+		$labels_activity = array(
+			'name'                  => _x( 'Activity Logs', 'Post Type General Name', 'jobs' ),
+			'singular_name'         => _x( 'Activity Log', 'Post Type Singular Name', 'jobs' ),
+			'menu_name'             => __( 'Activity Logs', 'jobs' ),
+		);
+		$args_activity = array(
+			'label'                 => __( 'Activity Log', 'jobs' ),
+			'description'           => __( 'User Activity Logs', 'jobs' ),
+			'labels'                => $labels_activity,
+			'supports'              => array( 'title', 'editor', 'author' ),
+			'hierarchical'          => false,
+			'public'                => false,
+			'show_ui'               => true,
+			'show_in_menu'          => 'edit.php?post_type=job',
+			'show_in_admin_bar'     => false,
+			'show_in_nav_menus'     => false,
+			'can_export'            => true,
+			'exclude_from_search'   => true,
+			'publicly_queryable'    => false,
+			'capability_type'       => 'post',
+		);
+		register_post_type( 'job_activity', $args_activity );
 	}
 
 	public function register_taxonomies() {

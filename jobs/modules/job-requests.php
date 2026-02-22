@@ -103,6 +103,49 @@ if ( in_array( 'employer', $roles ) || in_array( 'administrator', $roles ) ) { /
 	}
 }
 
+// JOB SEEKER VIEW: Status of their applications
+if ( in_array( 'job_seeker', $roles ) ) {
+	echo '<div class="jobs-module-header"><h2>My Application Status</h2></div>';
+
+	$my_applications = new WP_Query( array(
+		'post_type'      => 'job_application',
+		'author'         => $user->ID,
+		'posts_per_page' => -1,
+		'orderby'        => 'date',
+		'order'          => 'DESC',
+	) );
+
+	if ( $my_applications->have_posts() ) {
+		echo '<div class="jobs-requests-list">';
+		while ( $my_applications->have_posts() ) {
+			$my_applications->the_post();
+			$job_id = $post->post_parent;
+			$job = get_post( $job_id );
+			$status = 'Pending'; // Placeholder, ideally application has meta for status. Default is Pending.
+			// If we implement application status meta, we would read it here.
+			// For now, let's assume if the job is 'publish', it's still active.
+			// Actually, "Employer responses (e.g. job offers)" implies application status.
+			// I'll check if there is a meta key for application status, if not I'll just show "Submitted".
+			$app_status = get_post_meta( get_the_ID(), '_application_status', true );
+			if ( ! $app_status ) $app_status = 'Submitted';
+
+			echo '<div class="jobs-request-item">';
+			echo '<div class="jobs-request-info">';
+			echo 'Applied for <strong>' . get_the_title( $job_id ) . '</strong>';
+			echo '<br><span class="jobs-date">' . get_the_date() . '</span>';
+			echo '</div>';
+			echo '<div class="jobs-request-actions">';
+			echo '<span class="button button-small" style="background: #eee; color: #333; cursor: default;">' . esc_html( ucfirst( $app_status ) ) . '</span>';
+			echo '</div>';
+			echo '</div>';
+		}
+		echo '</div>';
+		wp_reset_postdata();
+	} else {
+		echo '<p>You have not applied to any jobs yet.</p>';
+	}
+}
+
 ?>
 
 <style>
