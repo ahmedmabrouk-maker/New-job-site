@@ -17,6 +17,20 @@ class Jobs_Ajax {
 		add_action( 'wp_ajax_jobs_delete_account', array( $this, 'delete_account' ) );
 	}
 
+	public static function log_activity( $title, $description = '', $user_id = 0 ) {
+		if ( ! $user_id ) {
+			$user_id = get_current_user_id();
+		}
+
+		wp_insert_post( array(
+			'post_title'   => $title,
+			'post_content' => $description,
+			'post_status'  => 'publish',
+			'post_type'    => 'job_activity',
+			'post_author'  => $user_id,
+		) );
+	}
+
 	public function load_module() {
 		check_ajax_referer( 'jobs_ajax_nonce', 'nonce' );
 
@@ -106,6 +120,8 @@ class Jobs_Ajax {
 		update_post_meta( $post_id, '_job_latitude', '' );
 		update_post_meta( $post_id, '_job_longitude', '' );
 
+		self::log_activity( 'New Job Posted', "Job '{$title}' (ID: {$post_id}) posted." );
+
 		wp_send_json_success( 'Job posted successfully! Waiting for approval.' );
 	}
 
@@ -136,16 +152,38 @@ class Jobs_Ajax {
 			}
 		}
 
+		// Sanitize courses
+		$courses = isset( $_POST['courses'] ) ? $_POST['courses'] : array();
+		$clean_courses = array();
+		if ( is_array( $courses ) ) {
+			foreach ( $courses as $crs ) {
+				$clean_courses[] = array_map( 'sanitize_text_field', $crs );
+			}
+		}
+
+		// Sanitize certifications
+		$certifications = isset( $_POST['certifications'] ) ? $_POST['certifications'] : array();
+		$clean_certifications = array();
+		if ( is_array( $certifications ) ) {
+			foreach ( $certifications as $cert ) {
+				$clean_certifications[] = array_map( 'sanitize_text_field', $cert );
+			}
+		}
+
 		// Sanitize skills
 		$skills = isset( $_POST['skills'] ) ? sanitize_text_field( $_POST['skills'] ) : '';
 
 		$cv_data = array(
-			'education'  => $clean_education,
-			'experience' => $clean_experience,
-			'skills'     => $skills,
+			'education'      => $clean_education,
+			'experience'     => $clean_experience,
+			'courses'        => $clean_courses,
+			'certifications' => $clean_certifications,
+			'skills'         => $skills,
 		);
 
 		update_user_meta( $user_id, '_jobs_cv_data', $cv_data );
+
+		self::log_activity( 'CV Updated', 'User updated their CV details.' );
 
 		wp_send_json_success( 'CV saved successfully!' );
 	}
@@ -194,6 +232,8 @@ class Jobs_Ajax {
 
 		update_user_meta( $user_id, '_jobs_company_data', $new_data );
 
+		self::log_activity( 'Company Profile Updated', "Company '{$company_name}' updated." );
+
 		wp_send_json_success( 'Company profile saved successfully!' );
 	}
 
@@ -216,6 +256,8 @@ class Jobs_Ajax {
 			'post_status' => 'publish',
 		) );
 
+		self::log_activity( 'Job Approved', "Job ID {$job_id} approved." );
+
 		wp_send_json_success( 'Job approved successfully.' );
 	}
 
@@ -237,6 +279,8 @@ class Jobs_Ajax {
 			'ID'          => $job_id,
 			'post_status' => 'trash',
 		) );
+
+		self::log_activity( 'Job Rejected', "Job ID {$job_id} rejected." );
 
 		wp_send_json_success( 'Job rejected.' );
 	}
@@ -289,6 +333,8 @@ class Jobs_Ajax {
 
 		wp_delete_post( $job_id, true ); // Force delete
 
+		self::log_activity( 'Draft Deleted', "Draft Job ID {$job_id} deleted." );
+
 		wp_send_json_success( 'Draft deleted.' );
 	}
 
@@ -324,6 +370,8 @@ class Jobs_Ajax {
 			'post_author'  => $user->ID,
 		) );
 
+		self::log_activity( 'Support Message Sent', "Subject: {$subject}" );
+
 		wp_send_json_success( 'Message sent successfully.' );
 	}
 
@@ -336,6 +384,8 @@ class Jobs_Ajax {
 
 		$hidden = intval( $_POST['hidden'] );
 		update_user_meta( get_current_user_id(), '_jobs_hide_public_profile', $hidden );
+
+		self::log_activity( 'Profile Visibility Toggled', "Hidden: {$hidden}" );
 
 		wp_send_json_success();
 	}
@@ -369,6 +419,7 @@ class Jobs_Ajax {
 			if ( is_wp_error( $user_id ) ) {
 				wp_send_json_error( $user_id->get_error_message() );
 			}
+			self::log_activity( 'Account Settings Updated', 'User updated account details.' );
 			wp_send_json_success( 'Account details updated.' );
 		} else {
 			wp_send_json_success( 'No changes made.' );
@@ -389,6 +440,8 @@ class Jobs_Ajax {
 		}
 
 		require_once( ABSPATH . 'wp-admin/includes/user.php' );
+
+		self::log_activity( 'Account Deleted', "User {$user->user_login} deleted their account." );
 
 		if ( wp_delete_user( $user->ID ) ) {
 			wp_send_json_success( 'Account deleted.' );
