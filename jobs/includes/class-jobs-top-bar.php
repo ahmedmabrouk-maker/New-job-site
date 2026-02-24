@@ -32,6 +32,8 @@ class Jobs_Top_Bar {
 		}
 
 		$avatar_url = get_avatar_url( $user->ID );
+		$page_ids = get_option( 'jobs_page_ids', array() );
+		$admin_panel_url = isset( $page_ids['admin_panel'] ) ? get_permalink( $page_ids['admin_panel'] ) : home_url();
 
 		?>
 		<div class="jobs-top-bar">
@@ -50,9 +52,9 @@ class Jobs_Top_Bar {
 			<div class="jobs-dropdown-menu">
 				<ul>
 					<?php if ( in_array( 'employer', $roles ) || in_array( 'reviewer', $roles ) || in_array( 'administrator', $roles ) ) : ?>
-						<?php if ( in_array( 'employer', $roles ) ) : ?>
 						<li><a href="#" onclick="loadJobsModule('job-posting'); return false;">Job Posting</a></li>
 						<li><a href="#" onclick="loadJobsModule('job-listings-history'); return false;">Job Listings History</a></li>
+						<?php if ( in_array( 'employer', $roles ) ) : ?>
 						<li><a href="#" onclick="loadJobsModule('company-profile'); return false;">Company Profile</a></li>
 						<?php endif; ?>
 						<li><a href="#" onclick="loadJobsModule('job-requests'); return false;">Job Requests</a></li>
@@ -71,7 +73,7 @@ class Jobs_Top_Bar {
 					<li><a href="#" onclick="loadJobsModule('settings'); return false;">Settings</a></li>
 
 					<?php if ( in_array( 'administrator', $roles ) ) : ?>
-						<li><a href="<?php echo admin_url( 'admin.php?page=jobs_admin' ); ?>">Advanced Settings</a></li>
+						<li><a href="<?php echo esc_url( $admin_panel_url ); ?>">Advanced Settings</a></li>
 					<?php endif; ?>
 
 					<li><a href="#" onclick="loadJobsModule('terms-conditions'); return false;">Terms & Conditions</a></li>

@@ -15,6 +15,8 @@ class Jobs_Ajax {
 		add_action( 'wp_ajax_jobs_toggle_public_profile', array( $this, 'toggle_public_profile' ) );
 		add_action( 'wp_ajax_jobs_update_account_settings', array( $this, 'update_account_settings' ) );
 		add_action( 'wp_ajax_jobs_delete_account', array( $this, 'delete_account' ) );
+		add_action( 'wp_ajax_jobs_save_design_settings', array( $this, 'save_design_settings' ) );
+		add_action( 'wp_ajax_jobs_save_ads_settings', array( $this, 'save_ads_settings' ) );
 	}
 
 	public function load_module() {
@@ -40,11 +42,26 @@ class Jobs_Ajax {
 			'settings',
 			'advanced-settings',
 			'terms-conditions',
-			'articles'
+			'articles',
+			// Admin Modules
+			'admin-dashboard',
+			'admin-reports',
+			'admin-activity',
+			'admin-users',
+			'admin-articles',
+			'admin-design',
+			'admin-support',
+			'admin-permissions',
+			'admin-ads'
 		);
 
 		if ( ! in_array( $module, $allowed_modules ) ) {
 			wp_send_json_error( 'Invalid module' );
+		}
+
+		// Security Check for Admin Modules
+		if ( strpos( $module, 'admin-' ) === 0 && ! current_user_can( 'administrator' ) ) {
+			wp_send_json_error( 'Permission denied' );
 		}
 
 		$file_path = JOBS_PLUGIN_DIR . 'modules/' . $module . '.php';
@@ -395,5 +412,41 @@ class Jobs_Ajax {
 		} else {
 			wp_send_json_error( 'Error deleting account.' );
 		}
+	}
+
+	public function save_design_settings() {
+		check_ajax_referer( 'jobs_ajax_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'administrator' ) ) {
+			wp_send_json_error( 'Permission denied.' );
+		}
+
+		if ( isset( $_POST['jobs_logo_url'] ) ) {
+			update_option( 'jobs_logo_url', sanitize_text_field( $_POST['jobs_logo_url'] ) );
+		}
+		if ( isset( $_POST['jobs_primary_color'] ) ) {
+			update_option( 'jobs_primary_color', sanitize_text_field( $_POST['jobs_primary_color'] ) );
+		}
+
+		wp_send_json_success( 'Settings saved.' );
+	}
+
+	public function save_ads_settings() {
+		check_ajax_referer( 'jobs_ajax_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'administrator' ) ) {
+			wp_send_json_error( 'Permission denied.' );
+		}
+
+		if ( isset( $_POST['jobs_ads_code'] ) ) {
+			// Allow unfiltered HTML for admins if they have the capability, otherwise kses
+			if ( current_user_can( 'unfiltered_html' ) ) {
+				update_option( 'jobs_ads_code', wp_unslash( $_POST['jobs_ads_code'] ) );
+			} else {
+				update_option( 'jobs_ads_code', wp_kses_post( $_POST['jobs_ads_code'] ) );
+			}
+		}
+
+		wp_send_json_success( 'Settings saved.' );
 	}
 }
