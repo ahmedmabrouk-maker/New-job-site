@@ -60,6 +60,10 @@ class Jobs_Activator {
 				'title'   => 'Register',
 				'content' => '[jobs_register]',
 			),
+			'admin_panel' => array(
+				'title'   => 'Admin Control Panel',
+				'content' => '[jobs_admin_panel]',
+			),
 		);
 
 		$page_ids = get_option( 'jobs_page_ids', array() );
