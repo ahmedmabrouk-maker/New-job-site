@@ -6,6 +6,7 @@ class Jobs_Shortcodes {
 		add_shortcode( 'jobs_search', array( $this, 'render_search' ) );
 		add_shortcode( 'jobs_login', array( $this, 'render_login' ) );
 		add_shortcode( 'jobs_register', array( $this, 'render_register' ) );
+		add_shortcode( 'jobs_admin_panel', array( $this, 'render_admin_panel' ) );
 
 		add_action( 'init', array( $this, 'handle_registration' ) );
 	}
@@ -177,6 +178,67 @@ class Jobs_Shortcodes {
 				</p>
 			</form>
 		</div>
+		<?php
+		return ob_get_clean();
+	}
+
+	public function render_admin_panel( $atts ) {
+		if ( ! is_user_logged_in() || ! current_user_can( 'administrator' ) ) {
+			return '<p>Access Denied.</p>';
+		}
+
+		ob_start();
+		?>
+		<div class="jobs-admin-panel-container">
+			<div class="jobs-admin-sidebar">
+				<div class="jobs-admin-sidebar-header">
+					<h2>Admin Panel</h2>
+				</div>
+				<ul class="jobs-admin-menu">
+					<li><a href="#" onclick="loadAdminModule('admin-dashboard', this); return false;" class="active">Dashboard</a></li>
+					<li><a href="#" onclick="loadAdminModule('admin-reports', this); return false;">Reports</a></li>
+					<li><a href="#" onclick="loadAdminModule('admin-activity', this); return false;">Activity Log</a></li>
+					<li><a href="#" onclick="loadAdminModule('admin-users', this); return false;">Users</a></li>
+					<li><a href="#" onclick="loadAdminModule('admin-articles', this); return false;">Articles</a></li>
+					<li><a href="#" onclick="loadAdminModule('admin-design', this); return false;">Design</a></li>
+					<li><a href="#" onclick="loadAdminModule('admin-support', this); return false;">Support</a></li>
+					<li><a href="#" onclick="loadAdminModule('admin-permissions', this); return false;">Permissions</a></li>
+					<li><a href="#" onclick="loadAdminModule('admin-ads', this); return false;">Ads</a></li>
+				</ul>
+			</div>
+			<div class="jobs-admin-content-area">
+				<div id="jobs-admin-content">
+					<div class="jobs-loader">Loading...</div>
+				</div>
+			</div>
+		</div>
+
+		<script>
+		function loadAdminModule(module, element) {
+			if (element) {
+				jQuery('.jobs-admin-menu a').removeClass('active');
+				jQuery(element).addClass('active');
+			}
+
+			jQuery('#jobs-admin-content').html('<div class="jobs-loader">Loading...</div>');
+
+			jQuery.post(jobs_ajax.ajax_url, {
+				action: 'jobs_load_module',
+				module: module,
+				nonce: jobs_ajax.nonce
+			}, function(response) {
+				if (response.success) {
+					jQuery('#jobs-admin-content').html(response.data);
+				} else {
+					jQuery('#jobs-admin-content').html('<p class="error">' + response.data + '</p>');
+				}
+			});
+		}
+
+		jQuery(document).ready(function($) {
+			loadAdminModule('admin-dashboard');
+		});
+		</script>
 		<?php
 		return ob_get_clean();
 	}
