@@ -40,11 +40,26 @@ class Jobs_Ajax {
 			'settings',
 			'advanced-settings',
 			'terms-conditions',
-			'articles'
+			'articles',
+			'admin-dashboard',
+			'admin-reports',
+			'admin-activity',
+			'admin-users',
+			'admin-articles',
+			'admin-design',
+			'admin-support',
+			'admin-permissions',
+			'admin-ads',
+			'admin-search'
 		);
 
 		if ( ! in_array( $module, $allowed_modules ) ) {
 			wp_send_json_error( 'Invalid module' );
+		}
+
+		// Security check for admin modules
+		if ( strpos( $module, 'admin-' ) === 0 && ! current_user_can( 'administrator' ) ) {
+			wp_send_json_error( 'Permission denied.' );
 		}
 
 		$file_path = JOBS_PLUGIN_DIR . 'modules/' . $module . '.php';
