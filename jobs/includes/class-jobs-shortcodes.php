@@ -6,8 +6,116 @@ class Jobs_Shortcodes {
 		add_shortcode( 'jobs_search', array( $this, 'render_search' ) );
 		add_shortcode( 'jobs_login', array( $this, 'render_login' ) );
 		add_shortcode( 'jobs_register', array( $this, 'render_register' ) );
+		add_shortcode( 'jobs_admin_panel', array( $this, 'render_admin_panel' ) );
 
 		add_action( 'init', array( $this, 'handle_registration' ) );
+	}
+
+	public function render_admin_panel( $atts ) {
+		if ( ! current_user_can( 'administrator' ) ) {
+			return '<p style="text-align:center; padding: 50px;">Access Denied. You must be an administrator to view this page.</p>';
+		}
+
+		ob_start();
+		?>
+		<div class="jobs-admin-panel-container">
+			<div class="jobs-admin-header">
+				<h1>System Admin Control Panel</h1>
+			</div>
+
+			<div class="jobs-admin-tabs">
+				<button class="jobs-admin-tab active" onclick="loadAdminModule('admin-dashboard', this)">Dashboard</button>
+				<button class="jobs-admin-tab" onclick="loadAdminModule('admin-reports', this)">Reports</button>
+				<button class="jobs-admin-tab" onclick="loadAdminModule('admin-activity', this)">Activity</button>
+				<button class="jobs-admin-tab" onclick="loadAdminModule('admin-users', this)">Users</button>
+				<button class="jobs-admin-tab" onclick="loadAdminModule('admin-articles', this)">Articles</button>
+				<button class="jobs-admin-tab" onclick="loadAdminModule('admin-design', this)">Design</button>
+				<button class="jobs-admin-tab" onclick="loadAdminModule('admin-search', this)">Search Settings</button>
+				<button class="jobs-admin-tab" onclick="loadAdminModule('admin-support', this)">Support</button>
+				<button class="jobs-admin-tab" onclick="loadAdminModule('admin-permissions', this)">Permissions</button>
+				<button class="jobs-admin-tab" onclick="loadAdminModule('admin-ads', this)">Ads</button>
+			</div>
+
+			<div id="jobs-admin-content" class="jobs-admin-content">
+				<!-- Content loaded via AJAX -->
+				<p>Loading...</p>
+			</div>
+		</div>
+
+		<script type="text/javascript">
+		function loadAdminModule(moduleName, tabElement) {
+			// Update active tab
+			if (tabElement) {
+				var tabs = document.querySelectorAll('.jobs-admin-tab');
+				tabs.forEach(function(tab) {
+					tab.classList.remove('active');
+				});
+				tabElement.classList.add('active');
+			}
+
+			var contentDiv = document.getElementById('jobs-admin-content');
+			contentDiv.innerHTML = '<p>Loading...</p>';
+
+			jQuery.post(jobs_ajax.ajax_url, {
+				action: 'jobs_load_module',
+				module: moduleName,
+				nonce: jobs_ajax.nonce
+			}, function(response) {
+				if (response.success) {
+					contentDiv.innerHTML = response.data;
+				} else {
+					contentDiv.innerHTML = '<p class="error">Error loading module: ' + response.data + '</p>';
+				}
+			});
+		}
+
+		// Load dashboard by default
+		document.addEventListener('DOMContentLoaded', function() {
+			loadAdminModule('admin-dashboard', document.querySelector('.jobs-admin-tab.active'));
+		});
+		</script>
+
+		<style>
+			.jobs-admin-panel-container {
+				max-width: 1200px;
+				margin: 0 auto;
+				padding: 20px;
+				font-family: 'Rubik', sans-serif;
+			}
+			.jobs-admin-header h1 {
+				color: #1d3469;
+				text-align: center;
+				margin-bottom: 30px;
+			}
+			.jobs-admin-tabs {
+				display: flex;
+				flex-wrap: wrap;
+				justify-content: center;
+				gap: 10px;
+				margin-bottom: 30px;
+			}
+			.jobs-admin-tab {
+				background: transparent;
+				border: 2px solid #1d3469;
+				color: #1d3469;
+				padding: 10px 20px;
+				border-radius: 25px;
+				cursor: pointer;
+				font-family: 'Rubik', sans-serif;
+				font-weight: 500;
+				transition: all 0.3s ease;
+			}
+			.jobs-admin-tab:hover, .jobs-admin-tab.active {
+				background: #1d3469;
+				color: #fff;
+			}
+			.jobs-admin-content {
+				background: transparent; /* Transparent as requested */
+				min-height: 400px;
+			}
+		</style>
+		<?php
+		return ob_get_clean();
 	}
 
 	public function handle_registration() {
